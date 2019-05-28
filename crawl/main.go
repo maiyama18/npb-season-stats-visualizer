@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/mui87/npb-season-stats-visualizer/crawl/crawler"
+	"github.com/mui87/npb-season-stats-visualizer/crawl/scraper"
 	"os"
 	"time"
 )
@@ -14,13 +14,13 @@ func main() {
 }
 
 func run() int {
-	c, err := crawler.New(baseURL, 500 * time.Millisecond)
+	s, err := scraper.New(baseURL, 500*time.Millisecond)
 	if err != nil {
 		fmt.Println(err)
 		return 1
 	}
 
-	_, _ = c.TeamPitchers(6)
+	_, _ = s.TeamPitchers(6)
 	//var (
 	//	pitcherStatsList []crawler.PitcherStats
 	//	batterStatsList []crawler.PitcherStats
