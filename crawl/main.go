@@ -20,14 +20,26 @@ func run() int {
 		return 1
 	}
 
-	_, _ = s.GetTeamPitchers(6)
-	//var (
-	//	pitcherStatsList []crawler.PitcherStats
-	//	batterStatsList []crawler.PitcherStats
-	//)
-	//for i := 1; i <= 12; i++ {
-	//	_, _ = c.GetTeamPitchers(6)
-	//}
+	var (
+		pitcherStatsList []scraper.PitcherStats
+	)
+
+	for teamID := 1; teamID <= 12; teamID++ {
+		pStats, err := s.GetTeamPitchers(teamID)
+		if err != nil {
+			return 1
+		}
+
+		pitcherStatsList = append(pitcherStatsList, pStats...)
+	}
+
+	// dbに存在するplayerを取得
+
+	// statsListとdbに存在するplayerから、存在しないplayerがわかるので、存在しないplayerをscrape
+
+	// dbに存在しないplayerを追加
+
+	// dbにstatsを追加
 
 	return 0
 }
