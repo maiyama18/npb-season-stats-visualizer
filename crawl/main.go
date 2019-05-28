@@ -20,13 +20,13 @@ func run() int {
 		return 1
 	}
 
-	_, _ = s.TeamPitchers(6)
+	_, _ = s.GetTeamPitchers(6)
 	//var (
 	//	pitcherStatsList []crawler.PitcherStats
 	//	batterStatsList []crawler.PitcherStats
 	//)
 	//for i := 1; i <= 12; i++ {
-	//	_, _ = c.TeamPitchers(6)
+	//	_, _ = c.GetTeamPitchers(6)
 	//}
 
 	return 0
