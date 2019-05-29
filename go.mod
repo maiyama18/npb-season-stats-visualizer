@@ -7,7 +7,7 @@ require (
 	github.com/antchfx/htmlquery v1.0.0 // indirect
 	github.com/antchfx/xmlquery v1.0.0 // indirect
 	github.com/antchfx/xpath v0.0.0-20190319080838-ce1d48779e67 // indirect
-	github.com/gobwas/glob v0.2.3 // indirect
+	github.com/gobwas/glob v0.2.3
 	github.com/gocolly/colly v1.2.0
 	github.com/jinzhu/gorm v1.9.8
 	github.com/kennygrant/sanitize v1.2.4 // indirect

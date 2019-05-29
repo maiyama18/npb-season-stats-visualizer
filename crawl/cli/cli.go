@@ -87,7 +87,11 @@ func (c *CLI) Run() error {
 	unsavedPlayerIDs := npbweb.SelectUnsavedPlayerIDs(pitcherStatsList, savedPlayerIDs)
 	fmt.Println(len(savedPlayerIDs), len(unsavedPlayerIDs), len(pitcherStatsList))
 
-	// dbに存在しないplayerを追加
+	unsavedPlayers, err := c.scraper.GetPlayers(unsavedPlayerIDs)
+	if err != nil {
+		return err
+	}
+	fmt.Println(unsavedPlayers)
 
 	// dbにstatsを追加
 	return nil
