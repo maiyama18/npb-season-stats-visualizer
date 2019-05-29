@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/mui87/npb-season-stats-visualizer/crawl/cli"
@@ -17,14 +17,17 @@ func main() {
 }
 
 func run() int {
-	c, err := cli.New()
+	logger := log.New(os.Stderr, "[LOG]", log.LstdFlags)
+	c, err := cli.New(logger)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err.Error())
+		logger.SetPrefix("[ERROR]")
+		logger.Println(err.Error())
 		return exitCodeErr
 	}
 
 	if err := c.Run(); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err.Error())
+		logger.SetPrefix("[ERROR]")
+		logger.Println(err.Error())
 		return exitCodeErr
 	}
 

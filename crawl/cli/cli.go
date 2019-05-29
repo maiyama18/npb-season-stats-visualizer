@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -19,9 +20,11 @@ const (
 type CLI struct {
 	dbClient *db.Client
 	scraper  *npbweb.Scraper
+
+	logger *log.Logger
 }
 
-func New() (*CLI, error) {
+func New(logger *log.Logger) (*CLI, error) {
 	baseURL := getEnv("NPB_BASE_URL", defaultBaseURL)
 
 	delayMsStr := getEnv("SCRAPE_DELAY_MS", defaultDelayMsStr)
@@ -34,6 +37,8 @@ func New() (*CLI, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	logger.Println("web scraper initialized")
 
 	var emptyEnvVars []string
 	dbUser := getEnv("DB_USER", "")
@@ -53,8 +58,8 @@ func New() (*CLI, error) {
 		emptyEnvVars = append(emptyEnvVars, "DB_PORT")
 	}
 	dbSchema := getEnv("DB_SCHEMA", "")
-	if dbPort == "" {
-		emptyEnvVars = append(emptyEnvVars, "DB_PORT")
+	if dbSchema == "" {
+		emptyEnvVars = append(emptyEnvVars, "DB_SCHEMA")
 	}
 	if len(emptyEnvVars) > 0 {
 		return nil, fmt.Errorf("the following environment variables should be set: %s", strings.Join(emptyEnvVars, ", "))
@@ -65,17 +70,23 @@ func New() (*CLI, error) {
 		return nil, fmt.Errorf("failed to create db client: %scraper", err)
 	}
 
+	logger.Println("db client initialized")
+
 	dbClient.CreateTables()
+
+	logger.Println("initialization complete")
 
 	return &CLI{
 		scraper:  scraper,
 		dbClient: dbClient,
+		logger:   logger,
 	}, nil
 }
 
 func (c *CLI) Run() error {
 	defer c.dbClient.CloseDB()
 
+	c.logger.Println("fetching stats...")
 	var pitcherStatsList []npbweb.PitcherStats
 	for teamID := 1; teamID <= 2; teamID++ {
 		pStatsList, err := c.scraper.GetTeamPitchers(teamID)
@@ -85,10 +96,7 @@ func (c *CLI) Run() error {
 
 		pitcherStatsList = append(pitcherStatsList, pStatsList...)
 	}
-
-	for _, stats := range pitcherStatsList {
-		fmt.Println(stats)
-	}
+	c.logger.Printf("complete! fetched %d stats", len(pitcherStatsList))
 
 	savedPlayerIDs, err := c.dbClient.GetPlayerIDs()
 	if err != nil {
@@ -96,17 +104,21 @@ func (c *CLI) Run() error {
 	}
 
 	unsavedPlayerIDs := npbweb.SelectUnsavedPlayerIDs(pitcherStatsList, savedPlayerIDs)
-	fmt.Println(len(savedPlayerIDs), len(unsavedPlayerIDs), len(pitcherStatsList))
+	c.logger.Printf("there is %d players not saved in db", len(unsavedPlayerIDs))
 
-	unsavedPlayers, err := c.scraper.GetPlayers(unsavedPlayerIDs)
-	if err != nil {
-		return err
-	}
-	fmt.Println(unsavedPlayers)
+	if len(unsavedPlayerIDs) > 0 {
+		c.logger.Println("fetching player's info...")
+		unsavedPlayers, err := c.scraper.GetPlayers(unsavedPlayerIDs)
+		if err != nil {
+			return err
+		}
+		c.logger.Printf("complete! fetched %d players' info", len(unsavedPlayers))
 
-	dbUnsavedPlayers := convertPlayers(unsavedPlayers)
-	if err := c.dbClient.CreatePlayers(dbUnsavedPlayers); err != nil {
-		return err
+		dbUnsavedPlayers := convertPlayers(unsavedPlayers)
+		if err := c.dbClient.CreatePlayers(dbUnsavedPlayers); err != nil {
+			return err
+		}
+		c.logger.Printf("saved %d players to db", len(unsavedPlayerIDs))
 	}
 
 	// dbにstatsを追加
