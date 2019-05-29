@@ -63,8 +63,9 @@ func New() (*CLI, error) {
 func (c *CLI) Run() error {
 	defer c.dbClient.CloseDB()
 
+	//var pitcherStatsList []scraper.PitcherStats
 	//for teamID := 1; teamID <= 12; teamID++ {
-	//	pStatsList, err := s.GetTeamPitchers(teamID)
+	//	pStatsList, err := c.scraper.GetTeamPitchers(teamID)
 	//	if err != nil {
 	//		return 1
 	//	}
