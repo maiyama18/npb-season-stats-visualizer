@@ -42,3 +42,7 @@ func (c *Client) GetPlayerIDs() ([]int, error) {
 
 	return ids, nil
 }
+
+func (c *Client) CloseDB() {
+	_ = c.db.Close()
+}

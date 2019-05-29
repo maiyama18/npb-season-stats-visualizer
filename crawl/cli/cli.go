@@ -61,6 +61,8 @@ func New() (*CLI, error) {
 }
 
 func (c *CLI) Run() error {
+	defer c.dbClient.CloseDB()
+
 	//for teamID := 1; teamID <= 12; teamID++ {
 	//	pStatsList, err := s.GetTeamPitchers(teamID)
 	//	if err != nil {
