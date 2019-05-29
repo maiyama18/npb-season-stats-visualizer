@@ -1,4 +1,4 @@
-package scraper
+package npbweb
 
 type Player struct {
 	id   int

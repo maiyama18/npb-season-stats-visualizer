@@ -1,4 +1,4 @@
-package scraper
+package npbweb
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ type Scraper struct {
 	collector *colly.Collector
 }
 
-func New(baseURL string, randomDelay time.Duration) (*Scraper, error) {
+func NewScraper(baseURL string, randomDelay time.Duration) (*Scraper, error) {
 	collector := colly.NewCollector()
 	err := collector.Limit(&colly.LimitRule{
 		DomainGlob:  "*",

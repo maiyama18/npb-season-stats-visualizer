@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/mui87/npb-season-stats-visualizer/crawl/db"
-	"github.com/mui87/npb-season-stats-visualizer/crawl/scraper"
+	"github.com/mui87/npb-season-stats-visualizer/crawl/npbweb"
 )
 
 const (
@@ -23,7 +23,7 @@ const (
 
 type CLI struct {
 	dbClient *db.Client
-	scraper  *scraper.Scraper
+	scraper  *npbweb.Scraper
 }
 
 func New() (*CLI, error) {
@@ -32,10 +32,10 @@ func New() (*CLI, error) {
 	delayMsStr := getEnv("SCRAPE_DELAY_MS", defaultDelayMsStr)
 	delayMs, err := strconv.Atoi(delayMsStr)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get SCRAPE_DELAY_MS: %s", err)
+		return nil, fmt.Errorf("failed to get SCRAPE_DELAY_MS: %scraper", err)
 	}
 
-	s, err := scraper.New(baseURL, time.Duration(delayMs)*time.Millisecond)
+	scraper, err := npbweb.NewScraper(baseURL, time.Duration(delayMs)*time.Millisecond)
 	if err != nil {
 		return nil, err
 	}
@@ -49,23 +49,23 @@ func New() (*CLI, error) {
 	dbPort := getEnv("DB_PORT", defaultDbPort)
 	dbSchema := getEnv("DB_SCHEMA", defaultDbSchema)
 
-	c, err := db.NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema)
+	dbClient, err := db.NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create db client: %s", err)
+		return nil, fmt.Errorf("failed to create db client: %scraper", err)
 	}
 
-	c.CreateTables()
+	dbClient.CreateTables()
 
 	return &CLI{
-		scraper:  s,
-		dbClient: c,
+		scraper:  scraper,
+		dbClient: dbClient,
 	}, nil
 }
 
 func (c *CLI) Run() error {
 	defer c.dbClient.CloseDB()
 
-	var pitcherStatsList []scraper.PitcherStats
+	var pitcherStatsList []npbweb.PitcherStats
 	for teamID := 1; teamID <= 2; teamID++ {
 		pStatsList, err := c.scraper.GetTeamPitchers(teamID)
 		if err != nil {
@@ -84,7 +84,7 @@ func (c *CLI) Run() error {
 		return err
 	}
 
-	unsavedPlayerIDs := scraper.SelectUnsavedPlayerIDs(pitcherStatsList, savedPlayerIDs)
+	unsavedPlayerIDs := npbweb.SelectUnsavedPlayerIDs(pitcherStatsList, savedPlayerIDs)
 	fmt.Println(len(savedPlayerIDs), len(unsavedPlayerIDs), len(pitcherStatsList))
 
 	// dbに存在しないplayerを追加
