@@ -56,7 +56,7 @@ func (c *Scraper) scrapeRows(url string) ([][]string, error) {
 	c.collector.OnHTML(`table.NpbPlSt > tbody > tr`, func(e *colly.HTMLElement) {
 		var row []string
 		e.ForEach(`td`, func(i int, tde *colly.HTMLElement) {
-			// save player's id instead of name
+			// save player's ID instead of Name
 			if i == idCol {
 				u := strings.Trim(tde.ChildAttr(`a`, `href`), "/")
 				su := strings.Split(u, "/")

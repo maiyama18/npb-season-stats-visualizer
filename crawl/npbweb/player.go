@@ -8,9 +8,9 @@ import (
 )
 
 type Player struct {
-	id   int
-	name string
-	kana string
+	ID   int
+	Name string
+	Kana string
 }
 
 func (c *Scraper) GetPlayers(ids []int) ([]Player, error) {
@@ -22,7 +22,7 @@ func (c *Scraper) GetPlayers(ids []int) ([]Player, error) {
 		if err != nil {
 			return nil, err
 		}
-		player.id = id
+		player.ID = id
 
 		players = append(players, player)
 	}
@@ -35,8 +35,8 @@ func (c *Scraper) scrapePlayer(url string) (Player, error) {
 	c.collector.OnHTML(`div.PlayerAdBox h1`, func(e *colly.HTMLElement) {
 		name, kana := extractNames(e.Text)
 		player = Player{
-			name: name,
-			kana: kana,
+			Name: name,
+			Kana: kana,
 		}
 	})
 
