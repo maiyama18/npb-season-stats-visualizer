@@ -54,6 +54,8 @@ func New() (*CLI, error) {
 		return nil, fmt.Errorf("failed to create db client: %s", err)
 	}
 
+	c.CreateTables()
+
 	return &CLI{
 		scraper:  s,
 		dbClient: c,
@@ -76,9 +78,14 @@ func (c *CLI) Run() error {
 	for _, stats := range pitcherStatsList {
 		fmt.Println(stats)
 	}
-	// dbに存在するplayerを取得
 
-	// statsListとdbに存在するplayerから、存在しないplayerがわかるので、存在しないplayerをscrape
+	savedPlayerIDs, err := c.dbClient.GetPlayerIDs()
+	if err != nil {
+		return err
+	}
+
+	unsavedPlayerIDs := scraper.SelectUnsavedPlayerIDs(pitcherStatsList, savedPlayerIDs)
+	fmt.Println(len(savedPlayerIDs), len(unsavedPlayerIDs), len(pitcherStatsList))
 
 	// dbに存在しないplayerを追加
 

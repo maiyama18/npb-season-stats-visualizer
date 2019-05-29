@@ -29,6 +29,12 @@ func NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema string) (*Client, er
 	}, nil
 }
 
+func (c *Client) CreateTables() {
+	if !c.db.HasTable(&Player{}) {
+		c.db.CreateTable(&Player{})
+	}
+}
+
 func (c *Client) GetPlayerIDs() ([]int, error) {
 	var players []Player
 	if err := c.db.Find(&players).Error; err != nil {

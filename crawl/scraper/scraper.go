@@ -100,6 +100,22 @@ func (c *Scraper) filterRows(rows [][]string) [][]string {
 	return filtered
 }
 
+func SelectUnsavedPlayerIDs(pitcherStatsList []PitcherStats, savedIDs []int) []int {
+	savedIDSet := make(map[int]bool)
+	for _, id := range savedIDs {
+		savedIDSet[id] = true
+	}
+
+	var unsavedIDs []int
+	for _, stats := range pitcherStatsList {
+		if _, exists := savedIDSet[stats.playerID]; !exists {
+			unsavedIDs = append(unsavedIDs, stats.playerID)
+		}
+	}
+
+	return unsavedIDs
+}
+
 func parseIntCol(text string) *int {
 	i, err := strconv.Atoi(text)
 	if err != nil {
