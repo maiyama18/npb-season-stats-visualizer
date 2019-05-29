@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
@@ -17,7 +18,7 @@ type Client struct {
 }
 
 func NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema string) (*Client, error) {
-	connStr := fmt.Sprintf("%s:%s!tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPassword, dbHost, dbPort, dbSchema)
+	connStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPassword, dbHost, dbPort, dbSchema)
 	db, err := gorm.Open("mysql", connStr)
 	if err != nil {
 		return nil, err

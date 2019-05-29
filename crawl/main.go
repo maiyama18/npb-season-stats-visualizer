@@ -19,12 +19,12 @@ func main() {
 func run() int {
 	c, err := cli.New()
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err.Error())
 		return exitCodeErr
 	}
 
 	if err := c.Run(); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, err.Error())
+		_, _ = fmt.Fprintf(os.Stderr, "[ERROR] %s\n", err.Error())
 		return exitCodeErr
 	}
 
