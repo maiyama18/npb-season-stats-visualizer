@@ -2,10 +2,11 @@ package scraper
 
 import (
 	"fmt"
-	"github.com/gocolly/colly"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gocolly/colly"
 )
 
 const idCol = 1
@@ -47,15 +48,6 @@ func (c *Scraper) GetTeamPitchers(teamID int) ([]PitcherStats, error) {
 		return nil, err
 	}
 
-	fmt.Println(len(statsList), "players")
-	for _, stats := range statsList {
-		fmt.Println("id", stats.playerID)
-		fmt.Println("era", *stats.era)
-		fmt.Println("win", *stats.win)
-		fmt.Println("so", *stats.strikeOut)
-		fmt.Println("inning", *stats.inning)
-		fmt.Println()
-	}
 	return statsList, nil
 }
 
