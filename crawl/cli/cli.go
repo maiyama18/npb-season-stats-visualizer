@@ -98,46 +98,48 @@ func (c *CLI) Run() error {
 	}
 	c.logger.Printf("complete! fetched %d stats", len(pitcherStatsList))
 
-	savedPlayerIDs, err := c.dbClient.GetPlayerIDs()
+	savedPitcherIDs, err := c.dbClient.GetPitcherIDs()
 	if err != nil {
 		return err
 	}
 
-	unsavedPlayerIDs := npbweb.SelectUnsavedPlayerIDs(pitcherStatsList, savedPlayerIDs)
-	c.logger.Printf("there is %d players not saved in db", len(unsavedPlayerIDs))
+	unsavedPitcherIDs := npbweb.SelectUnsavedPlayerIDs(pitcherStatsList, savedPitcherIDs)
+	c.logger.Printf("there is %d players not saved in db", len(unsavedPitcherIDs))
 
-	if len(unsavedPlayerIDs) > 0 {
+	if len(unsavedPitcherIDs) > 0 {
 		c.logger.Println("fetching player's info...")
-		unsavedPlayers, err := c.scraper.GetPlayers(unsavedPlayerIDs)
+		unsavedPitchers, err := c.scraper.GetPlayers(unsavedPitcherIDs)
 		if err != nil {
 			return err
 		}
-		c.logger.Printf("complete! fetched %d players' info", len(unsavedPlayers))
+		c.logger.Printf("complete! fetched %d players' info", len(unsavedPitchers))
 
-		dbUnsavedPlayers := convertPlayers(unsavedPlayers)
-		if err := c.dbClient.CreatePlayers(dbUnsavedPlayers); err != nil {
+		dbUnsavedPitchers := convertPitchers(unsavedPitchers)
+		if err := c.dbClient.CreatePitchers(dbUnsavedPitchers); err != nil {
 			return err
 		}
-		c.logger.Printf("saved %d players to db", len(unsavedPlayerIDs))
+		c.logger.Printf("saved %d players to db", len(dbUnsavedPitchers))
 	}
 
 	// dbにstatsを追加
 	return nil
 }
 
-func convertPlayers(inputPlayers []npbweb.Player) []db.Player {
-	var convertedPlayers []db.Player
+func convertPitchers(inputPlayers []npbweb.Player) []db.Pitcher {
+	var convertedPlayers []db.Pitcher
 	for _, player := range inputPlayers {
-		convertedPlayers = append(convertedPlayers, convertPlayer(player))
+		convertedPlayers = append(convertedPlayers, convertPitcher(player))
 	}
 	return convertedPlayers
 }
 
-func convertPlayer(inputPlayer npbweb.Player) db.Player {
-	return db.Player{
-		ID:   inputPlayer.ID,
-		Name: inputPlayer.Name,
-		Kana: inputPlayer.Kana,
+func convertPitcher(inputPlayer npbweb.Player) db.Pitcher {
+	return db.Pitcher{
+		Player: db.Player{
+			ID:   inputPlayer.ID,
+			Name: inputPlayer.Name,
+			Kana: inputPlayer.Kana,
+		},
 	}
 }
 

@@ -21,6 +21,10 @@ type Player struct {
 	TimeStamps
 }
 
+type Pitcher struct {
+	Player
+}
+
 type Client struct {
 	db *gorm.DB
 }
@@ -38,26 +42,30 @@ func NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema string) (*Client, er
 }
 
 func (c *Client) CreateTables() {
-	if !c.db.HasTable(&Player{}) {
-		c.db.CreateTable(&Player{})
+	objects := []interface{}{&Pitcher{}}
+
+	for _, obj := range objects {
+		if !c.db.HasTable(obj) {
+			c.db.CreateTable(obj)
+		}
 	}
 }
 
-func (c *Client) GetPlayerIDs() ([]int, error) {
-	var players []Player
-	if err := c.db.Find(&players).Error; err != nil {
+func (c *Client) GetPitcherIDs() ([]int, error) {
+	var pitchers []Pitcher
+	if err := c.db.Find(&pitchers).Error; err != nil {
 		return nil, err
 	}
 
 	var ids []int
-	for _, player := range players {
-		ids = append(ids, player.ID)
+	for _, pitcher := range pitchers {
+		ids = append(ids, pitcher.ID)
 	}
 
 	return ids, nil
 }
 
-func (c *Client) CreatePlayers(players []Player) error {
+func (c *Client) CreatePitchers(pitchers []Pitcher) error {
 	tx := c.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -69,8 +77,8 @@ func (c *Client) CreatePlayers(players []Player) error {
 		return err
 	}
 
-	for _, player := range players {
-		if err := tx.Create(&player).Error; err != nil {
+	for _, pitcher := range pitchers {
+		if err := tx.Create(&pitcher).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
