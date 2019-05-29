@@ -93,8 +93,29 @@ func (c *CLI) Run() error {
 	}
 	fmt.Println(unsavedPlayers)
 
+	dbUnsavedPlayers := convertPlayers(unsavedPlayers)
+	if err := c.dbClient.CreatePlayers(dbUnsavedPlayers); err != nil {
+		return err
+	}
+
 	// dbにstatsを追加
 	return nil
+}
+
+func convertPlayers(inputPlayers []npbweb.Player) []db.Player {
+	var convertedPlayers []db.Player
+	for _, player := range inputPlayers {
+		convertedPlayers = append(convertedPlayers, convertPlayer(player))
+	}
+	return convertedPlayers
+}
+
+func convertPlayer(inputPlayer npbweb.Player) db.Player {
+	return db.Player{
+		ID:   inputPlayer.ID,
+		Name: inputPlayer.Name,
+		Kana: inputPlayer.Kana,
+	}
 }
 
 func getEnv(envName, defaultValue string) string {

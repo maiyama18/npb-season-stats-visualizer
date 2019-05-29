@@ -49,6 +49,28 @@ func (c *Client) GetPlayerIDs() ([]int, error) {
 	return ids, nil
 }
 
+func (c *Client) CreatePlayers(players []Player) error {
+	tx := c.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	for _, player := range players {
+		if err := tx.Create(&player).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit().Error
+}
+
 func (c *Client) CloseDB() {
 	_ = c.db.Close()
 }
