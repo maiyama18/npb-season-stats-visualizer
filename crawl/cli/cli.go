@@ -1,10 +1,10 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mui87/npb-season-stats-visualizer/crawl/db"
@@ -14,11 +14,6 @@ import (
 const (
 	defaultBaseURL    = "https://baseball.yahoo.co.jp/npb"
 	defaultDelayMsStr = "2000"
-
-	defaultDbUser   = "root"
-	defaultDbHost   = "localhost"
-	defaultDbPort   = "3306"
-	defaultDbSchema = "npb_season_stats"
 )
 
 type CLI struct {
@@ -40,14 +35,30 @@ func New() (*CLI, error) {
 		return nil, err
 	}
 
-	dbUser := getEnv("DB_USER", defaultDbUser)
+	var emptyEnvVars []string
+	dbUser := getEnv("DB_USER", "")
+	if dbUser == "" {
+		emptyEnvVars = append(emptyEnvVars, "DB_USER")
+	}
 	dbPassword := getEnv("DB_PASSWORD", "")
 	if dbPassword == "" {
-		return nil, errors.New("DB_PASSWORD not set")
+		emptyEnvVars = append(emptyEnvVars, "DB_PASSWORD")
 	}
-	dbHost := getEnv("DB_HOST", defaultDbHost)
-	dbPort := getEnv("DB_PORT", defaultDbPort)
-	dbSchema := getEnv("DB_SCHEMA", defaultDbSchema)
+	dbHost := getEnv("DB_HOST", "")
+	if dbHost == "" {
+		emptyEnvVars = append(emptyEnvVars, "DB_HOST")
+	}
+	dbPort := getEnv("DB_PORT", "")
+	if dbPort == "" {
+		emptyEnvVars = append(emptyEnvVars, "DB_PORT")
+	}
+	dbSchema := getEnv("DB_SCHEMA", "")
+	if dbPort == "" {
+		emptyEnvVars = append(emptyEnvVars, "DB_PORT")
+	}
+	if len(emptyEnvVars) > 0 {
+		return nil, fmt.Errorf("the following environment variables should be set: %s", strings.Join(emptyEnvVars, ", "))
+	}
 
 	dbClient, err := db.NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema)
 	if err != nil {
