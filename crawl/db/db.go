@@ -2,15 +2,23 @@ package db
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
+type TimeStamps struct {
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+}
+
 type Player struct {
 	ID   int    `gorm:"primary_key"`
 	Name string `gorm:"not null"`
 	Kana string `gorm:"not null"`
+	TimeStamps
 }
 
 type Client struct {
