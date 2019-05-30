@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mui87/npb-season-stats-visualizer/crawl/db"
 	"github.com/mui87/npb-season-stats-visualizer/crawl/npbweb"
+	"github.com/mui87/npb-season-stats-visualizer/db"
 )
 
 const (

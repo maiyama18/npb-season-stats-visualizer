@@ -12,3 +12,5 @@ login_db:
 	mysql -h ${DB_HOST} --port ${DB_PORT} -u${DB_USER} -p${DB_PASSWORD} ${DB_SCHEMA}
 crawl:
 	go run crawl/main.go
+server:
+	go run api/main.go

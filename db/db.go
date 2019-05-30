@@ -6,6 +6,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/miiton/kanaconv"
 )
 
 type TimeStamps struct {
@@ -160,6 +161,27 @@ func (c *Client) CreateStatsList(pitcherStatsList []PitcherStats, batterStatsLis
 	}
 
 	return savedPitcherStatsCount, savedBatterStatsCount, tx.Commit().Error
+}
+
+func (c *Client) SearchPitchers(query string) ([]Pitcher, error) {
+	var pitchers []Pitcher
+	likeQuery := "%" + query + "%"
+	if err := c.db.Where("name LIKE ? OR kana LIKE ?", likeQuery, likeQuery).Find(&pitchers).Error; err != nil {
+		return nil, err
+	}
+
+	return pitchers, nil
+}
+
+func (c *Client) SearchBatters(query string) ([]Batter, error) {
+	var batters []Batter
+
+	likeQuery := "%" + kanaconv.HiraganaToKatakana(query) + "%"
+	if err := c.db.Where("name LIKE ? OR kana LIKE ?", likeQuery, likeQuery).Find(&batters).Error; err != nil {
+		return nil, err
+	}
+
+	return batters, nil
 }
 
 func (c *Client) CloseDB() {
