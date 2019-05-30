@@ -101,10 +101,13 @@ func (c *CLI) Run() error {
 		return err
 	}
 
-	dbUnsavedPitchers := convertPitchers(unsavedPitchers)
-	dbUnsavedBatters := convertBatters(unsavedBatters)
-
+	dbUnsavedPitchers, dbUnsavedBatters := convertPlayers(unsavedPitchers, unsavedBatters)
 	if err := c.saveUnsavedPlayers(dbUnsavedPitchers, dbUnsavedBatters); err != nil {
+		return err
+	}
+
+	dbPitcherStatsList, dbBatterStatsList := convertStatsLists(pitcherStatsList, batterStatsList)
+	if err := c.saveStatsLists(dbPitcherStatsList, dbBatterStatsList); err != nil {
 		return err
 	}
 
@@ -192,6 +195,16 @@ func (c *CLI) saveUnsavedPlayers(pitchers []db.Pitcher, batters []db.Batter) err
 	return nil
 }
 
+func (c *CLI) saveStatsLists(pitcherStatsList []db.PitcherStats, batterStatsList []db.BatterStats) error {
+	if err := c.dbClient.CreateStatsList(pitcherStatsList, batterStatsList); err != nil {
+		return err
+	}
+
+	c.logger.Printf("saved %d pitcher stats and %d batter stats", len(pitcherStatsList), len(batterStatsList))
+
+	return nil
+}
+
 func selectUnsavedPlayerIDs(remoteIDs, savedIDs []int) []int {
 	savedIDSet := make(map[int]bool)
 	for _, id := range savedIDs {
@@ -208,12 +221,20 @@ func selectUnsavedPlayerIDs(remoteIDs, savedIDs []int) []int {
 	return unsavedIDs
 }
 
-func convertPitchers(inputPlayers []npbweb.Player) []db.Pitcher {
-	var convertedPitchers []db.Pitcher
-	for _, player := range inputPlayers {
-		convertedPitchers = append(convertedPitchers, convertPitcher(player))
+func convertPlayers(inputPitchers, inputBatters []npbweb.Player) ([]db.Pitcher, []db.Batter) {
+	var (
+		convertedPitchers []db.Pitcher
+		convertedBatters  []db.Batter
+	)
+
+	for _, p := range inputPitchers {
+		convertedPitchers = append(convertedPitchers, convertPitcher(p))
 	}
-	return convertedPitchers
+	for _, b := range inputBatters {
+		convertedBatters = append(convertedBatters, convertBatter(b))
+	}
+
+	return convertedPitchers, convertedBatters
 }
 
 func convertPitcher(inputPlayer npbweb.Player) db.Pitcher {
@@ -226,14 +247,6 @@ func convertPitcher(inputPlayer npbweb.Player) db.Pitcher {
 	}
 }
 
-func convertBatters(inputPlayers []npbweb.Player) []db.Batter {
-	var convertedBatters []db.Batter
-	for _, player := range inputPlayers {
-		convertedBatters = append(convertedBatters, convertBatter(player))
-	}
-	return convertedBatters
-}
-
 func convertBatter(inputPlayer npbweb.Player) db.Batter {
 	return db.Batter{
 		Player: db.Player{
@@ -241,6 +254,92 @@ func convertBatter(inputPlayer npbweb.Player) db.Batter {
 			Name: inputPlayer.Name,
 			Kana: inputPlayer.Kana,
 		},
+	}
+}
+
+func convertStatsLists(
+	inputPitcherStatsList []npbweb.PitcherStats, inputBatterStatsList []npbweb.BatterStats,
+) ([]db.PitcherStats, []db.BatterStats) {
+	var (
+		convertedPitcherStatsList []db.PitcherStats
+		convertedBatterStatsList  []db.BatterStats
+	)
+
+	for _, p := range inputPitcherStatsList {
+		convertedPitcherStatsList = append(convertedPitcherStatsList, convertPitcherStats(p))
+	}
+	for _, b := range inputBatterStatsList {
+		convertedBatterStatsList = append(convertedBatterStatsList, convertBatterStats(b))
+	}
+
+	return convertedPitcherStatsList, convertedBatterStatsList
+}
+
+func convertPitcherStats(inputStats npbweb.PitcherStats) db.PitcherStats {
+	// date is the previous day of the scraping
+	date := time.Now().Add(-24 * time.Hour)
+	return db.PitcherStats{
+		PitcherID:        inputStats.PlayerID,
+		Date:             date,
+		Era:              inputStats.Era,
+		Game:             inputStats.Game,
+		GameStart:        inputStats.GameStart,
+		Complete:         inputStats.Complete,
+		ShutOut:          inputStats.ShutOut,
+		QualityStart:     inputStats.QualityStart,
+		Win:              inputStats.Win,
+		Lose:             inputStats.Lose,
+		Hold:             inputStats.Hold,
+		HoldPoint:        inputStats.HoldPoint,
+		Save:             inputStats.Save,
+		WinPercent:       inputStats.WinPercent,
+		Inning:           inputStats.Inning,
+		Hit:              inputStats.Hit,
+		HomeRun:          inputStats.HomeRun,
+		StrikeOut:        inputStats.StrikeOut,
+		StrikeOutPercent: inputStats.StrikeOutPercent,
+		Walk:             inputStats.Walk,
+		HitByPitch:       inputStats.HitByPitch,
+		WildPitch:        inputStats.WildPitch,
+		Balk:             inputStats.Balk,
+		Run:              inputStats.Run,
+		EarnedRun:        inputStats.EarnedRun,
+		Average:          inputStats.Average,
+		Kbb:              inputStats.Kbb,
+		Whip:             inputStats.Whip,
+	}
+}
+
+func convertBatterStats(inputStats npbweb.BatterStats) db.BatterStats {
+	// date is the previous day of the scraping
+	date := time.Now().Add(-24 * time.Hour)
+	return db.BatterStats{
+		BatterID:                   inputStats.PlayerID,
+		Date:                       date,
+		Average:                    inputStats.Average,
+		Game:                       inputStats.Game,
+		PlateAppearance:            inputStats.PlateAppearance,
+		AtBat:                      inputStats.AtBat,
+		Hit:                        inputStats.Hit,
+		Double:                     inputStats.Double,
+		Triple:                     inputStats.Triple,
+		HomeRun:                    inputStats.HomeRun,
+		TotalBase:                  inputStats.TotalBase,
+		RunBattedIn:                inputStats.RunBattedIn,
+		Run:                        inputStats.Run,
+		StrikeOut:                  inputStats.StrikeOut,
+		Walk:                       inputStats.Walk,
+		HitByPitch:                 inputStats.HitByPitch,
+		Sacrifice:                  inputStats.Sacrifice,
+		SacrificeFly:               inputStats.SacrificeFly,
+		StolenBase:                 inputStats.StolenBase,
+		CaughtStealing:             inputStats.CaughtStealing,
+		DoublePlay:                 inputStats.DoublePlay,
+		OnBasePercent:              inputStats.OnBasePercent,
+		SluggingPercent:            inputStats.SluggingPercent,
+		Ops:                        inputStats.Ops,
+		AverageWithScoringPosition: inputStats.AverageWithScoringPosition,
+		Error:                      inputStats.Error,
 	}
 }
 

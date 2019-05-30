@@ -16,8 +16,8 @@ type TimeStamps struct {
 
 type Player struct {
 	ID   int    `gorm:"primary_key"`
-	Name string `gorm:"not null"`
-	Kana string `gorm:"not null"`
+	Name string `sql:"not null"`
+	Kana string `sql:"not null"`
 	TimeStamps
 }
 
@@ -27,6 +27,78 @@ type Pitcher struct {
 
 type Batter struct {
 	Player
+}
+
+type PitcherStats struct {
+	Pitcher          Pitcher `gorm:"foreignkey:PitcherID"`
+	PitcherID        int
+	Date             time.Time `sql:"not null;type:date"`
+	Era              *float64
+	Game             *int
+	GameStart        *int
+	Complete         *int
+	ShutOut          *int
+	QualityStart     *int
+	Win              *int
+	Lose             *int
+	Hold             *int
+	HoldPoint        *int
+	Save             *int
+	WinPercent       *float64
+	Inning           *float64
+	Hit              *int
+	HomeRun          *int
+	StrikeOut        *int
+	StrikeOutPercent *float64
+	Walk             *int
+	HitByPitch       *int
+	WildPitch        *int
+	Balk             *int
+	Run              *int
+	EarnedRun        *int
+	Average          *float64
+	Kbb              *float64
+	Whip             *float64
+	TimeStamps
+}
+
+func (PitcherStats) TableName() string {
+	return "pitcher_stats_list"
+}
+
+type BatterStats struct {
+	Batter                     Batter `gorm:"foreignkey:BatterID"`
+	BatterID                   int
+	Date                       time.Time `sql:"not null;type:date"`
+	Average                    *float64
+	Game                       *int
+	PlateAppearance            *int
+	AtBat                      *int
+	Hit                        *int
+	Double                     *int
+	Triple                     *int
+	HomeRun                    *int
+	TotalBase                  *int
+	RunBattedIn                *int
+	Run                        *int
+	StrikeOut                  *int
+	Walk                       *int
+	HitByPitch                 *int
+	Sacrifice                  *int
+	SacrificeFly               *int
+	StolenBase                 *int
+	CaughtStealing             *int
+	DoublePlay                 *int
+	OnBasePercent              *float64
+	SluggingPercent            *float64
+	Ops                        *float64
+	AverageWithScoringPosition *float64
+	Error                      *int
+	TimeStamps
+}
+
+func (BatterStats) TableName() string {
+	return "batter_stats_list"
 }
 
 type Client struct {
@@ -46,7 +118,7 @@ func NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema string) (*Client, er
 }
 
 func (c *Client) CreateTables() {
-	objects := []interface{}{&Pitcher{}, &Batter{}}
+	objects := []interface{}{&Pitcher{}, &Batter{}, &PitcherStats{}, &BatterStats{}}
 
 	for _, obj := range objects {
 		if !c.db.HasTable(obj) {
@@ -89,6 +161,35 @@ func (c *Client) CreatePlayers(pitchers []Pitcher, batters []Batter) error {
 
 	for _, batter := range batters {
 		if err := tx.Create(&batter).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	return tx.Commit().Error
+}
+
+func (c *Client) CreateStatsList(pitcherStatsList []PitcherStats, batterStatsList []BatterStats) error {
+	tx := c.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return err
+	}
+
+	for _, pStats := range pitcherStatsList {
+		if err := tx.Create(&pStats).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	for _, bStats := range batterStatsList {
+		if err := tx.Create(&bStats).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
