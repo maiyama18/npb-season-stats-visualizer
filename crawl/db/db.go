@@ -11,13 +11,12 @@ import (
 type TimeStamps struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt *time.Time
 }
 
 type Player struct {
-	ID   int    `gorm:"primary_key"`
-	Name string `sql:"not null"`
-	Kana string `sql:"not null"`
+	ID   int `gorm:"primary_key" sql:"type:int"`
+	Name string
+	Kana string
 	TimeStamps
 }
 
@@ -30,11 +29,11 @@ type Batter struct {
 }
 
 type PitcherStats struct {
-	Pitcher          Pitcher `gorm:"foreignkey:PitcherID"`
-	PitcherID        int
+	Game             *int `gorm:"primary_key sql:"type:int"`
+	PitcherID        int  `gorm:"primary_key sql:"type:int"`
+	Pitcher          Pitcher
 	Date             time.Time `sql:"not null;type:date"`
 	Era              *float64
-	Game             *int
 	GameStart        *int
 	Complete         *int
 	ShutOut          *int
@@ -67,11 +66,11 @@ func (PitcherStats) TableName() string {
 }
 
 type BatterStats struct {
-	Batter                     Batter `gorm:"foreignkey:BatterID"`
-	BatterID                   int
+	Game                       *int `gorm:"primary_key" sql:"type:int"`
+	BatterID                   int  `gorm:"primary_key" sql:"type:int"`
+	Batter                     Batter
 	Date                       time.Time `sql:"not null;type:date"`
 	Average                    *float64
-	Game                       *int
 	PlateAppearance            *int
 	AtBat                      *int
 	Hit                        *int
@@ -105,26 +104,39 @@ type Client struct {
 	db *gorm.DB
 }
 
-func NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema string) (*Client, error) {
+func NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema string, logMode bool) (*Client, error) {
 	connStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPassword, dbHost, dbPort, dbSchema)
 	db, err := gorm.Open("mysql", connStr)
 	if err != nil {
 		return nil, err
 	}
 
+	db.LogMode(logMode)
+
 	return &Client{
 		db: db,
 	}, nil
 }
 
-func (c *Client) CreateTables() {
-	objects := []interface{}{&Pitcher{}, &Batter{}, &PitcherStats{}, &BatterStats{}}
+func (c *Client) CreateTables() error {
+	tx := c.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
 
+	objects := []interface{}{&Pitcher{}, &Batter{}, &PitcherStats{}, &BatterStats{}}
 	for _, obj := range objects {
 		if !c.db.HasTable(obj) {
-			c.db.CreateTable(obj)
+			if err := tx.CreateTable(obj).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
+
+	return tx.Commit().Error
 }
 
 func (c *Client) GetPlayerIDs() ([]int, []int, error) {
@@ -169,7 +181,7 @@ func (c *Client) CreatePlayers(pitchers []Pitcher, batters []Batter) error {
 	return tx.Commit().Error
 }
 
-func (c *Client) CreateStatsList(pitcherStatsList []PitcherStats, batterStatsList []BatterStats) error {
+func (c *Client) CreateStatsList(pitcherStatsList []PitcherStats, batterStatsList []BatterStats) (int, int, error) {
 	tx := c.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -178,24 +190,48 @@ func (c *Client) CreateStatsList(pitcherStatsList []PitcherStats, batterStatsLis
 	}()
 
 	if err := tx.Error; err != nil {
-		return err
+		return 0, 0, err
 	}
 
+	savedPitcherStatsCount := 0
+	savedBatterStatsCount := 0
+
 	for _, pStats := range pitcherStatsList {
-		if err := tx.Create(&pStats).Error; err != nil {
+		exists, err := c.doesPitcherStatsExists(tx, pStats.PitcherID, pStats.Game)
+		if err != nil {
 			tx.Rollback()
-			return err
+			return 0, 0, err
 		}
+		if exists {
+			continue
+		}
+
+		// here, Save is used instead of Create because there may be the existing record which was softly deleted
+		if err := tx.Save(&pStats).Error; err != nil {
+			tx.Rollback()
+			return 0, 0, err
+		}
+		savedPitcherStatsCount++
 	}
 
 	for _, bStats := range batterStatsList {
-		if err := tx.Create(&bStats).Error; err != nil {
+		exists, err := c.doesBatterStatsExists(tx, bStats.BatterID, bStats.Game)
+		if err != nil {
 			tx.Rollback()
-			return err
+			return 0, 0, err
 		}
+		if exists {
+			continue
+		}
+
+		if err := tx.Save(&bStats).Error; err != nil {
+			tx.Rollback()
+			return 0, 0, err
+		}
+		savedBatterStatsCount++
 	}
 
-	return tx.Commit().Error
+	return savedPitcherStatsCount, savedBatterStatsCount, tx.Commit().Error
 }
 
 func (c *Client) CloseDB() {
@@ -228,4 +264,22 @@ func (c *Client) getBatterIDs() ([]int, error) {
 	}
 
 	return ids, nil
+}
+
+func (c *Client) doesPitcherStatsExists(tx *gorm.DB, pitcherID int, game *int) (bool, error) {
+	var existings []PitcherStats
+	if err := tx.Where(&PitcherStats{PitcherID: pitcherID, Game: game}).Find(&existings).Error; err != nil {
+		return false, err
+	}
+
+	return len(existings) > 0, nil
+}
+
+func (c *Client) doesBatterStatsExists(tx *gorm.DB, batterID int, game *int) (bool, error) {
+	var existings []BatterStats
+	if err := tx.Where(&BatterStats{BatterID: batterID, Game: game}).Find(&existings).Error; err != nil {
+		return false, err
+	}
+
+	return len(existings) > 0, nil
 }

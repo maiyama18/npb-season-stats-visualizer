@@ -65,14 +65,22 @@ func New(logger *log.Logger) (*CLI, error) {
 		return nil, fmt.Errorf("the following environment variables should be set: %s", strings.Join(emptyEnvVars, ", "))
 	}
 
-	dbClient, err := db.NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema)
+	logModeStr := getEnv("GORM_LOG_MODE", "off")
+	logMode := false
+	if logModeStr == "on" {
+		logMode = true
+	}
+
+	dbClient, err := db.NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema, logMode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create db client: %scraper", err)
 	}
 
 	logger.Println("db client initialized")
 
-	dbClient.CreateTables()
+	if err := dbClient.CreateTables(); err != nil {
+		return nil, err
+	}
 
 	logger.Println("initialization complete")
 
@@ -196,11 +204,12 @@ func (c *CLI) saveUnsavedPlayers(pitchers []db.Pitcher, batters []db.Batter) err
 }
 
 func (c *CLI) saveStatsLists(pitcherStatsList []db.PitcherStats, batterStatsList []db.BatterStats) error {
-	if err := c.dbClient.CreateStatsList(pitcherStatsList, batterStatsList); err != nil {
+	savedPCount, savedBCount, err := c.dbClient.CreateStatsList(pitcherStatsList, batterStatsList)
+	if err != nil {
 		return err
 	}
 
-	c.logger.Printf("saved %d pitcher stats and %d batter stats", len(pitcherStatsList), len(batterStatsList))
+	c.logger.Printf("saved %d pitcher stats and %d batter stats", savedPCount, savedBCount)
 
 	return nil
 }

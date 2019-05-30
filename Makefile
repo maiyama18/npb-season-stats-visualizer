@@ -7,8 +7,7 @@ setup_db:
 teardown_db:
 	docker-compose down
 empty_db:
-	mysql -h ${DB_HOST} --port ${DB_PORT} -u${DB_USER} -p${DB_PASSWORD} -e "drop database ${DB_SCHEMA}"
-	mysql -h ${DB_HOST} --port ${DB_PORT} -u${DB_USER} -p${DB_PASSWORD} -e "create database ${DB_SCHEMA}"
+	mysql -h ${DB_HOST} --port ${DB_PORT} -u${DB_USER} -p${DB_PASSWORD} -e "drop database ${DB_SCHEMA}; create database ${DB_SCHEMA}"
 login_db:
 	mysql -h ${DB_HOST} --port ${DB_PORT} -u${DB_USER} -p${DB_PASSWORD} ${DB_SCHEMA}
 crawl:
