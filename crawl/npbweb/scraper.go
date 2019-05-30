@@ -33,7 +33,7 @@ func NewScraper(baseURL string, randomDelay time.Duration) (*Scraper, error) {
 	}, nil
 }
 
-func (c *Scraper) GetTeamPitchers(teamID int) ([]PitcherStats, error) {
+func (c *Scraper) GetTeamPitcherStatsList(teamID int) ([]PitcherStats, error) {
 	url := fmt.Sprintf("%s/teams/%d/memberlist?type=p", c.baseURL, teamID)
 
 	rows, err := c.scrapeRows(url)
@@ -44,6 +44,24 @@ func (c *Scraper) GetTeamPitchers(teamID int) ([]PitcherStats, error) {
 	filteredRows := c.filterRows(rows)
 
 	statsList, err := c.constructPitcherStatsList(filteredRows)
+	if err != nil {
+		return nil, err
+	}
+
+	return statsList, nil
+}
+
+func (c *Scraper) GetTeamBatterStatsList(teamID int) ([]BatterStats, error) {
+	url := fmt.Sprintf("%s/teams/%d/memberlist?type=b", c.baseURL, teamID)
+
+	rows, err := c.scrapeRows(url)
+	if err != nil {
+		return nil, err
+	}
+
+	filteredRows := c.filterRows(rows)
+
+	statsList, err := c.constructBatterStatsList(filteredRows)
 	if err != nil {
 		return nil, err
 	}
@@ -100,32 +118,24 @@ func (c *Scraper) filterRows(rows [][]string) [][]string {
 	return filtered
 }
 
-func SelectUnsavedPlayerIDs(pitcherStatsList []PitcherStats, savedIDs []int) []int {
-	savedIDSet := make(map[int]bool)
-	for _, id := range savedIDs {
-		savedIDSet[id] = true
+func parseIntCol(row []string, col int) *int {
+	if col < 0 || col >= len(row) {
+		return nil
 	}
 
-	var unsavedIDs []int
-	for _, stats := range pitcherStatsList {
-		if _, exists := savedIDSet[stats.playerID]; !exists {
-			unsavedIDs = append(unsavedIDs, stats.playerID)
-		}
-	}
-
-	return unsavedIDs
-}
-
-func parseIntCol(text string) *int {
-	i, err := strconv.Atoi(text)
+	i, err := strconv.Atoi(row[col])
 	if err != nil {
 		return nil
 	}
 	return &i
 }
 
-func parseFloatCol(text string) *float64 {
-	f, err := strconv.ParseFloat(text, 64)
+func parseFloatCol(row []string, col int) *float64 {
+	if col < 0 || col >= len(row) {
+		return nil
+	}
+
+	f, err := strconv.ParseFloat(row[col], 64)
 	if err != nil {
 		return nil
 	}

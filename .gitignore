@@ -1,4 +1,5 @@
 .idea
 .envrc
+*.env
 npb-season-stats-visualizer
 

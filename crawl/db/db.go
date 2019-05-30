@@ -25,6 +25,10 @@ type Pitcher struct {
 	Player
 }
 
+type Batter struct {
+	Player
+}
+
 type Client struct {
 	db *gorm.DB
 }
@@ -42,7 +46,7 @@ func NewClient(dbUser, dbPassword, dbHost, dbPort, dbSchema string) (*Client, er
 }
 
 func (c *Client) CreateTables() {
-	objects := []interface{}{&Pitcher{}}
+	objects := []interface{}{&Pitcher{}, &Batter{}}
 
 	for _, obj := range objects {
 		if !c.db.HasTable(obj) {
@@ -51,21 +55,20 @@ func (c *Client) CreateTables() {
 	}
 }
 
-func (c *Client) GetPitcherIDs() ([]int, error) {
-	var pitchers []Pitcher
-	if err := c.db.Find(&pitchers).Error; err != nil {
-		return nil, err
+func (c *Client) GetPlayerIDs() ([]int, []int, error) {
+	pitcherIDs, err := c.getPitcherIDs()
+	if err != nil {
+		return nil, nil, err
+	}
+	batterIDs, err := c.getBatterIDs()
+	if err != nil {
+		return nil, nil, err
 	}
 
-	var ids []int
-	for _, pitcher := range pitchers {
-		ids = append(ids, pitcher.ID)
-	}
-
-	return ids, nil
+	return pitcherIDs, batterIDs, nil
 }
 
-func (c *Client) CreatePitchers(pitchers []Pitcher) error {
+func (c *Client) CreatePlayers(pitchers []Pitcher, batters []Batter) error {
 	tx := c.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -84,9 +87,44 @@ func (c *Client) CreatePitchers(pitchers []Pitcher) error {
 		}
 	}
 
+	for _, batter := range batters {
+		if err := tx.Create(&batter).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
 	return tx.Commit().Error
 }
 
 func (c *Client) CloseDB() {
 	_ = c.db.Close()
+}
+
+func (c *Client) getPitcherIDs() ([]int, error) {
+	var pitchers []Pitcher
+	if err := c.db.Find(&pitchers).Error; err != nil {
+		return nil, err
+	}
+
+	var ids []int
+	for _, pitcher := range pitchers {
+		ids = append(ids, pitcher.ID)
+	}
+
+	return ids, nil
+}
+
+func (c *Client) getBatterIDs() ([]int, error) {
+	var batters []Batter
+	if err := c.db.Find(&batters).Error; err != nil {
+		return nil, err
+	}
+
+	var ids []int
+	for _, batter := range batters {
+		ids = append(ids, batter.ID)
+	}
+
+	return ids, nil
 }

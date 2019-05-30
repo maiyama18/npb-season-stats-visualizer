@@ -86,55 +86,156 @@ func New(logger *log.Logger) (*CLI, error) {
 func (c *CLI) Run() error {
 	defer c.dbClient.CloseDB()
 
-	c.logger.Println("fetching stats...")
-	var pitcherStatsList []npbweb.PitcherStats
-	for teamID := 1; teamID <= 2; teamID++ {
-		pStatsList, err := c.scraper.GetTeamPitchers(teamID)
-		if err != nil {
-			return err
-		}
-
-		pitcherStatsList = append(pitcherStatsList, pStatsList...)
-	}
-	c.logger.Printf("complete! fetched %d stats", len(pitcherStatsList))
-
-	savedPitcherIDs, err := c.dbClient.GetPitcherIDs()
+	pitcherStatsList, batterStatsList, err := c.fetchStatsLists()
 	if err != nil {
 		return err
 	}
 
-	unsavedPitcherIDs := npbweb.SelectUnsavedPlayerIDs(pitcherStatsList, savedPitcherIDs)
-	c.logger.Printf("there is %d players not saved in db", len(unsavedPitcherIDs))
-
-	if len(unsavedPitcherIDs) > 0 {
-		c.logger.Println("fetching player's info...")
-		unsavedPitchers, err := c.scraper.GetPlayers(unsavedPitcherIDs)
-		if err != nil {
-			return err
-		}
-		c.logger.Printf("complete! fetched %d players' info", len(unsavedPitchers))
-
-		dbUnsavedPitchers := convertPitchers(unsavedPitchers)
-		if err := c.dbClient.CreatePitchers(dbUnsavedPitchers); err != nil {
-			return err
-		}
-		c.logger.Printf("saved %d players to db", len(dbUnsavedPitchers))
+	unsavedPitcherIDs, unsavedBatterIDs, err := c.getUnsavedPlayerIDs(pitcherStatsList, batterStatsList)
+	if err != nil {
+		return err
 	}
 
-	// dbにstatsを追加
+	unsavedPitchers, unsavedBatters, err := c.fetchUnsavedPlayers(unsavedPitcherIDs, unsavedBatterIDs)
+	if err != nil {
+		return err
+	}
+
+	dbUnsavedPitchers := convertPitchers(unsavedPitchers)
+	dbUnsavedBatters := convertBatters(unsavedBatters)
+
+	if err := c.saveUnsavedPlayers(dbUnsavedPitchers, dbUnsavedBatters); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func convertPitchers(inputPlayers []npbweb.Player) []db.Pitcher {
-	var convertedPlayers []db.Pitcher
-	for _, player := range inputPlayers {
-		convertedPlayers = append(convertedPlayers, convertPitcher(player))
+func (c *CLI) fetchStatsLists() ([]npbweb.PitcherStats, []npbweb.BatterStats, error) {
+	c.logger.Println("fetching stats...")
+
+	var (
+		pitcherStatsList []npbweb.PitcherStats
+		batterStatsList  []npbweb.BatterStats
+	)
+	for teamID := 1; teamID <= 2; teamID++ {
+		pStatsList, err := c.scraper.GetTeamPitcherStatsList(teamID)
+		if err != nil {
+			return nil, nil, err
+		}
+		bStatsList, err := c.scraper.GetTeamBatterStatsList(teamID)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		pitcherStatsList = append(pitcherStatsList, pStatsList...)
+		batterStatsList = append(batterStatsList, bStatsList...)
 	}
-	return convertedPlayers
+
+	c.logger.Printf("complete! fetched %d pitching stats and %d batting stats", len(pitcherStatsList), len(batterStatsList))
+
+	return pitcherStatsList, batterStatsList, nil
+}
+
+func (c *CLI) getUnsavedPlayerIDs(
+	pitcherStatsList []npbweb.PitcherStats, batterStatsList []npbweb.BatterStats,
+) ([]int, []int, error) {
+	savedPitcherIDs, savedBatterIDs, err := c.dbClient.GetPlayerIDs()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var (
+		remotePitcherIDs []int
+		remoteBatterIDs  []int
+	)
+	for _, pStats := range pitcherStatsList {
+		remotePitcherIDs = append(remotePitcherIDs, pStats.PlayerID)
+	}
+	for _, bStats := range batterStatsList {
+		remoteBatterIDs = append(remoteBatterIDs, bStats.PlayerID)
+	}
+
+	unsavedPitcherIDs := selectUnsavedPlayerIDs(remotePitcherIDs, savedPitcherIDs)
+	unsavedBatterIDs := selectUnsavedPlayerIDs(remoteBatterIDs, savedBatterIDs)
+
+	c.logger.Printf("there are %d pitchers and %d batters not saved in db", len(unsavedPitcherIDs), len(unsavedBatterIDs))
+
+	return unsavedPitcherIDs, unsavedBatterIDs, nil
+}
+
+func (c *CLI) fetchUnsavedPlayers(pitcherIDs, batterIDs []int) ([]npbweb.Player, []npbweb.Player, error) {
+	c.logger.Println("fetching players' profiles...")
+
+	pitchers, err := c.scraper.GetPlayers(pitcherIDs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	batters, err := c.scraper.GetPlayers(batterIDs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	c.logger.Printf("complete! fetched %d pitcher profiles and %d batter profiles", len(pitchers), len(batters))
+
+	return pitchers, batters, nil
+}
+
+func (c *CLI) saveUnsavedPlayers(pitchers []db.Pitcher, batters []db.Batter) error {
+	if err := c.dbClient.CreatePlayers(pitchers, batters); err != nil {
+		return err
+	}
+
+	c.logger.Printf("saved %d pitcher profiles and %d batter profiles", len(pitchers), len(batters))
+
+	return nil
+}
+
+func selectUnsavedPlayerIDs(remoteIDs, savedIDs []int) []int {
+	savedIDSet := make(map[int]bool)
+	for _, id := range savedIDs {
+		savedIDSet[id] = true
+	}
+
+	var unsavedIDs []int
+	for _, remoteID := range remoteIDs {
+		if _, exists := savedIDSet[remoteID]; !exists {
+			unsavedIDs = append(unsavedIDs, remoteID)
+		}
+	}
+
+	return unsavedIDs
+}
+
+func convertPitchers(inputPlayers []npbweb.Player) []db.Pitcher {
+	var convertedPitchers []db.Pitcher
+	for _, player := range inputPlayers {
+		convertedPitchers = append(convertedPitchers, convertPitcher(player))
+	}
+	return convertedPitchers
 }
 
 func convertPitcher(inputPlayer npbweb.Player) db.Pitcher {
 	return db.Pitcher{
+		Player: db.Player{
+			ID:   inputPlayer.ID,
+			Name: inputPlayer.Name,
+			Kana: inputPlayer.Kana,
+		},
+	}
+}
+
+func convertBatters(inputPlayers []npbweb.Player) []db.Batter {
+	var convertedBatters []db.Batter
+	for _, player := range inputPlayers {
+		convertedBatters = append(convertedBatters, convertBatter(player))
+	}
+	return convertedBatters
+}
+
+func convertBatter(inputPlayer npbweb.Player) db.Batter {
+	return db.Batter{
 		Player: db.Player{
 			ID:   inputPlayer.ID,
 			Name: inputPlayer.Name,

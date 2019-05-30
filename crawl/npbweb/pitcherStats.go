@@ -6,32 +6,32 @@ import (
 )
 
 const (
-	eraCol = iota + 2
-	gameCol
-	gameStartCol
-	completeCol
-	shutOutCol
-	qualityStartCol
-	winCol
-	loseCol
-	holdCol
-	holdPointCol
-	saveCol
-	winPercentCol
-	inningCol
-	hitCol
-	homeRunCol
-	strikeOutCol
-	strikeOutPercentCol
-	walkCol
-	hitByPitchCol
-	wildPitchCol
-	balkCol
-	runCol
-	earnedRunCol
-	averageCol
-	kbbCol
-	whipCol
+	pitcherEraCol = iota + 2
+	pitcherGameCol
+	pitcherGameStartCol
+	pitcherCompleteCol
+	pitcherShutOutCol
+	pitcherQualityStartCol
+	pitcherWinCol
+	pitcherLoseCol
+	pitcherHoldCol
+	pitcherHoldPointCol
+	pitcherSaveCol
+	pitcherWinPercentCol
+	pitcherInningCol
+	pitcherHitCol
+	pitcherHomeRunCol
+	pitcherStrikeOutCol
+	pitcherStrikeOutPercentCol
+	pitcherWalkCol
+	pitcherHitByPitchCol
+	pitcherWildPitchCol
+	pitcherBalkCol
+	pitcherRunCol
+	pitcherEarnedRunCol
+	pitcherAverageCol
+	pitcherKbbCol
+	pitcherWhipCol
 )
 
 type PitcherStats struct {
@@ -84,7 +84,7 @@ func constructPitcherStats(row []string) (PitcherStats, error) {
 		return PitcherStats{}, err
 	}
 
-	inning := parseFloatCol(row[inningCol])
+	inning := parseFloatCol(row, pitcherInningCol)
 	if inning != nil {
 		flr := math.Floor(*inning)
 		*inning = flr + (*inning-flr)*(10.0/3.0)
@@ -92,31 +92,31 @@ func constructPitcherStats(row []string) (PitcherStats, error) {
 
 	return PitcherStats{
 		PlayerID:         id,
-		Era:              parseFloatCol(row[eraCol]),
-		Game:             parseIntCol(row[gameCol]),
-		GameStart:        parseIntCol(row[gameStartCol]),
-		Complete:         parseIntCol(row[completeCol]),
-		ShutOut:          parseIntCol(row[shutOutCol]),
-		QualityStart:     parseIntCol(row[qualityStartCol]),
-		Win:              parseIntCol(row[winCol]),
-		Lose:             parseIntCol(row[loseCol]),
-		Hold:             parseIntCol(row[holdCol]),
-		HoldPoint:        parseIntCol(row[holdPointCol]),
-		Save:             parseIntCol(row[saveCol]),
-		WinPercent:       parseFloatCol(row[winPercentCol]),
+		Era:              parseFloatCol(row, pitcherEraCol),
+		Game:             parseIntCol(row, pitcherGameCol),
+		GameStart:        parseIntCol(row, pitcherGameStartCol),
+		Complete:         parseIntCol(row, pitcherCompleteCol),
+		ShutOut:          parseIntCol(row, pitcherShutOutCol),
+		QualityStart:     parseIntCol(row, pitcherQualityStartCol),
+		Win:              parseIntCol(row, pitcherWinCol),
+		Lose:             parseIntCol(row, pitcherLoseCol),
+		Hold:             parseIntCol(row, pitcherHoldCol),
+		HoldPoint:        parseIntCol(row, pitcherHoldPointCol),
+		Save:             parseIntCol(row, pitcherSaveCol),
+		WinPercent:       parseFloatCol(row, pitcherWinPercentCol),
 		Inning:           inning,
-		Hit:              parseIntCol(row[hitCol]),
-		HomeRun:          parseIntCol(row[homeRunCol]),
-		StrikeOut:        parseIntCol(row[strikeOutCol]),
-		StrikeOutPercent: parseFloatCol(row[strikeOutPercentCol]),
-		Walk:             parseIntCol(row[walkCol]),
-		HitByPitch:       parseIntCol(row[hitByPitchCol]),
-		WildPitch:        parseIntCol(row[wildPitchCol]),
-		Balk:             parseIntCol(row[balkCol]),
-		Run:              parseIntCol(row[runCol]),
-		EarnedRun:        parseIntCol(row[earnedRunCol]),
-		Average:          parseFloatCol(row[averageCol]),
-		Kbb:              parseFloatCol(row[kbbCol]),
-		Whip:             parseFloatCol(row[whipCol]),
+		Hit:              parseIntCol(row, pitcherHitCol),
+		HomeRun:          parseIntCol(row, pitcherHomeRunCol),
+		StrikeOut:        parseIntCol(row, pitcherStrikeOutCol),
+		StrikeOutPercent: parseFloatCol(row, pitcherStrikeOutPercentCol),
+		Walk:             parseIntCol(row, pitcherWalkCol),
+		HitByPitch:       parseIntCol(row, pitcherHitByPitchCol),
+		WildPitch:        parseIntCol(row, pitcherWildPitchCol),
+		Balk:             parseIntCol(row, pitcherBalkCol),
+		Run:              parseIntCol(row, pitcherRunCol),
+		EarnedRun:        parseIntCol(row, pitcherEarnedRunCol),
+		Average:          parseFloatCol(row, pitcherAverageCol),
+		Kbb:              parseFloatCol(row, pitcherKbbCol),
+		Whip:             parseFloatCol(row, pitcherWhipCol),
 	}, nil
 }
