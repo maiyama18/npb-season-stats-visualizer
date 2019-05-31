@@ -7,7 +7,6 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/miiton/kanaconv"
 )
 
 type Client struct {
@@ -142,27 +141,6 @@ func (c *Client) CreateStatsList(pitcherStatsList []domain.PitcherStats, batterS
 	}
 
 	return savedPitcherStatsCount, savedBatterStatsCount, tx.Commit().Error
-}
-
-func (c *Client) SearchPitchers(query string) ([]domain.Pitcher, error) {
-	var pitchers []domain.Pitcher
-	likeQuery := "%" + query + "%"
-	if err := c.db.Where("name LIKE ? OR kana LIKE ?", likeQuery, likeQuery).Find(&pitchers).Error; err != nil {
-		return nil, err
-	}
-
-	return pitchers, nil
-}
-
-func (c *Client) SearchBatters(query string) ([]domain.Batter, error) {
-	var batters []domain.Batter
-
-	likeQuery := "%" + kanaconv.HiraganaToKatakana(query) + "%"
-	if err := c.db.Where("name LIKE ? OR kana LIKE ?", likeQuery, likeQuery).Find(&batters).Error; err != nil {
-		return nil, err
-	}
-
-	return batters, nil
 }
 
 func (c *Client) CloseDB() {
