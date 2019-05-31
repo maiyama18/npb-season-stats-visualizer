@@ -19,6 +19,8 @@ const (
 	defaultDelayMsStr = "2000"
 )
 
+var teamIDs = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 376}
+
 type CLI struct {
 	dbClient *db.Client
 	scraper  *npbweb.Scraper
@@ -131,7 +133,7 @@ func (c *CLI) fetchStatsLists() ([]npbweb.PitcherStats, []npbweb.BatterStats, er
 		pitcherStatsList []npbweb.PitcherStats
 		batterStatsList  []npbweb.BatterStats
 	)
-	for teamID := 1; teamID <= 12; teamID++ {
+	for _, teamID := range teamIDs {
 		pStatsList, err := c.scraper.GetTeamPitcherStatsList(teamID)
 		if err != nil {
 			return nil, nil, err
@@ -143,6 +145,8 @@ func (c *CLI) fetchStatsLists() ([]npbweb.PitcherStats, []npbweb.BatterStats, er
 
 		pitcherStatsList = append(pitcherStatsList, pStatsList...)
 		batterStatsList = append(batterStatsList, bStatsList...)
+
+		c.logger.Printf("fetched team with ID %d", teamID)
 	}
 
 	c.logger.Printf("complete! fetched %d pitching stats and %d batting stats", len(pitcherStatsList), len(batterStatsList))
@@ -180,14 +184,26 @@ func (c *CLI) getUnsavedPlayerIDs(
 func (c *CLI) fetchUnsavedPlayers(pitcherIDs, batterIDs []int) ([]npbweb.Player, []npbweb.Player, error) {
 	c.logger.Println("fetching players' profiles...")
 
-	pitchers, err := c.scraper.GetPlayers(pitcherIDs)
-	if err != nil {
-		return nil, nil, err
+	var pitchers []npbweb.Player
+	for _, id := range pitcherIDs {
+		pitcher, err := c.scraper.GetPlayer(id)
+		if err != nil {
+			return nil, nil, err
+		}
+		pitchers = append(pitchers, pitcher)
+
+		c.logger.Printf("fetched %s (id: %d)", pitcher.Name, pitcher.ID)
 	}
 
-	batters, err := c.scraper.GetPlayers(batterIDs)
-	if err != nil {
-		return nil, nil, err
+	var batters []npbweb.Player
+	for _, id := range batterIDs {
+		batter, err := c.scraper.GetPlayer(id)
+		if err != nil {
+			return nil, nil, err
+		}
+		batters = append(batters, batter)
+
+		c.logger.Printf("fetched %s (id: %d)", batter.Name, batter.ID)
 	}
 
 	c.logger.Printf("complete! fetched %d pitcher profiles and %d batter profiles", len(pitchers), len(batters))

@@ -13,21 +13,16 @@ type Player struct {
 	Kana string
 }
 
-func (c *Scraper) GetPlayers(ids []int) ([]Player, error) {
-	var players []Player
-	for _, id := range ids {
-		u := fmt.Sprintf("%s/player/%d/", c.baseURL, id)
+func (c *Scraper) GetPlayer(id int) (Player, error) {
+	u := fmt.Sprintf("%s/player/%d/", c.baseURL, id)
 
-		player, err := c.scrapePlayer(u)
-		if err != nil {
-			return nil, err
-		}
-		player.ID = id
-
-		players = append(players, player)
+	player, err := c.scrapePlayer(u)
+	if err != nil {
+		return Player{}, err
 	}
+	player.ID = id
 
-	return players, nil
+	return player, nil
 }
 
 func (c *Scraper) scrapePlayer(url string) (Player, error) {
