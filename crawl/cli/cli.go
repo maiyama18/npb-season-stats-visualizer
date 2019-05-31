@@ -131,7 +131,7 @@ func (c *CLI) fetchStatsLists() ([]npbweb.PitcherStats, []npbweb.BatterStats, er
 		pitcherStatsList []npbweb.PitcherStats
 		batterStatsList  []npbweb.BatterStats
 	)
-	for teamID := 1; teamID <= 2; teamID++ {
+	for teamID := 1; teamID <= 12; teamID++ {
 		pStatsList, err := c.scraper.GetTeamPitcherStatsList(teamID)
 		if err != nil {
 			return nil, nil, err
