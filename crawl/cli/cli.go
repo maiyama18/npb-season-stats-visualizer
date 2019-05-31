@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mui87/npb-season-stats-visualizer/domain"
+
 	"github.com/mui87/npb-season-stats-visualizer/crawl/db"
 	"github.com/mui87/npb-season-stats-visualizer/crawl/npbweb"
 )
@@ -193,7 +195,7 @@ func (c *CLI) fetchUnsavedPlayers(pitcherIDs, batterIDs []int) ([]npbweb.Player,
 	return pitchers, batters, nil
 }
 
-func (c *CLI) saveUnsavedPlayers(pitchers []db.Pitcher, batters []db.Batter) error {
+func (c *CLI) saveUnsavedPlayers(pitchers []domain.Pitcher, batters []domain.Batter) error {
 	if err := c.dbClient.CreatePlayers(pitchers, batters); err != nil {
 		return err
 	}
@@ -203,7 +205,7 @@ func (c *CLI) saveUnsavedPlayers(pitchers []db.Pitcher, batters []db.Batter) err
 	return nil
 }
 
-func (c *CLI) saveStatsLists(pitcherStatsList []db.PitcherStats, batterStatsList []db.BatterStats) error {
+func (c *CLI) saveStatsLists(pitcherStatsList []domain.PitcherStats, batterStatsList []domain.BatterStats) error {
 	savedPCount, savedBCount, err := c.dbClient.CreateStatsList(pitcherStatsList, batterStatsList)
 	if err != nil {
 		return err
@@ -230,10 +232,10 @@ func selectUnsavedPlayerIDs(remoteIDs, savedIDs []int) []int {
 	return unsavedIDs
 }
 
-func convertPlayers(inputPitchers, inputBatters []npbweb.Player) ([]db.Pitcher, []db.Batter) {
+func convertPlayers(inputPitchers, inputBatters []npbweb.Player) ([]domain.Pitcher, []domain.Batter) {
 	var (
-		convertedPitchers []db.Pitcher
-		convertedBatters  []db.Batter
+		convertedPitchers []domain.Pitcher
+		convertedBatters  []domain.Batter
 	)
 
 	for _, p := range inputPitchers {
@@ -246,9 +248,9 @@ func convertPlayers(inputPitchers, inputBatters []npbweb.Player) ([]db.Pitcher, 
 	return convertedPitchers, convertedBatters
 }
 
-func convertPitcher(inputPlayer npbweb.Player) db.Pitcher {
-	return db.Pitcher{
-		Player: db.Player{
+func convertPitcher(inputPlayer npbweb.Player) domain.Pitcher {
+	return domain.Pitcher{
+		Player: domain.Player{
 			ID:   inputPlayer.ID,
 			Name: inputPlayer.Name,
 			Kana: inputPlayer.Kana,
@@ -256,9 +258,9 @@ func convertPitcher(inputPlayer npbweb.Player) db.Pitcher {
 	}
 }
 
-func convertBatter(inputPlayer npbweb.Player) db.Batter {
-	return db.Batter{
-		Player: db.Player{
+func convertBatter(inputPlayer npbweb.Player) domain.Batter {
+	return domain.Batter{
+		Player: domain.Player{
 			ID:   inputPlayer.ID,
 			Name: inputPlayer.Name,
 			Kana: inputPlayer.Kana,
@@ -268,10 +270,10 @@ func convertBatter(inputPlayer npbweb.Player) db.Batter {
 
 func convertStatsLists(
 	inputPitcherStatsList []npbweb.PitcherStats, inputBatterStatsList []npbweb.BatterStats,
-) ([]db.PitcherStats, []db.BatterStats) {
+) ([]domain.PitcherStats, []domain.BatterStats) {
 	var (
-		convertedPitcherStatsList []db.PitcherStats
-		convertedBatterStatsList  []db.BatterStats
+		convertedPitcherStatsList []domain.PitcherStats
+		convertedBatterStatsList  []domain.BatterStats
 	)
 
 	for _, p := range inputPitcherStatsList {
@@ -284,10 +286,10 @@ func convertStatsLists(
 	return convertedPitcherStatsList, convertedBatterStatsList
 }
 
-func convertPitcherStats(inputStats npbweb.PitcherStats) db.PitcherStats {
+func convertPitcherStats(inputStats npbweb.PitcherStats) domain.PitcherStats {
 	// date is the previous day of the scraping
 	date := time.Now().Add(-24 * time.Hour)
-	return db.PitcherStats{
+	return domain.PitcherStats{
 		PitcherID:        inputStats.PlayerID,
 		Date:             date,
 		Era:              inputStats.Era,
@@ -319,10 +321,10 @@ func convertPitcherStats(inputStats npbweb.PitcherStats) db.PitcherStats {
 	}
 }
 
-func convertBatterStats(inputStats npbweb.BatterStats) db.BatterStats {
+func convertBatterStats(inputStats npbweb.BatterStats) domain.BatterStats {
 	// date is the previous day of the scraping
 	date := time.Now().Add(-24 * time.Hour)
-	return db.BatterStats{
+	return domain.BatterStats{
 		BatterID:                   inputStats.PlayerID,
 		Date:                       date,
 		Average:                    inputStats.Average,

@@ -2,32 +2,13 @@ package db
 
 import (
 	"fmt"
-	"time"
+
+	"github.com/mui87/npb-season-stats-visualizer/domain"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/miiton/kanaconv"
 )
-
-type TimeStamps struct {
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
-type Player struct {
-	ID   int `gorm:"primary_key" sql:"type:int"`
-	Name string
-	Kana string
-	TimeStamps
-}
-
-type Pitcher struct {
-	Player
-}
-
-type Batter struct {
-	Player
-}
 
 type Client struct {
 	db *gorm.DB
@@ -55,7 +36,7 @@ func (c *Client) CreateTables() error {
 		}
 	}()
 
-	objects := []interface{}{&Pitcher{}, &Batter{}, &PitcherStats{}, &BatterStats{}}
+	objects := []interface{}{&domain.Pitcher{}, &domain.Batter{}, &domain.PitcherStats{}, &domain.BatterStats{}}
 	for _, obj := range objects {
 		if !c.db.HasTable(obj) {
 			if err := tx.CreateTable(obj).Error; err != nil {
@@ -81,7 +62,7 @@ func (c *Client) GetPlayerIDs() ([]int, []int, error) {
 	return pitcherIDs, batterIDs, nil
 }
 
-func (c *Client) CreatePlayers(pitchers []Pitcher, batters []Batter) error {
+func (c *Client) CreatePlayers(pitchers []domain.Pitcher, batters []domain.Batter) error {
 	tx := c.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -110,7 +91,7 @@ func (c *Client) CreatePlayers(pitchers []Pitcher, batters []Batter) error {
 	return tx.Commit().Error
 }
 
-func (c *Client) CreateStatsList(pitcherStatsList []PitcherStats, batterStatsList []BatterStats) (int, int, error) {
+func (c *Client) CreateStatsList(pitcherStatsList []domain.PitcherStats, batterStatsList []domain.BatterStats) (int, int, error) {
 	tx := c.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -163,8 +144,8 @@ func (c *Client) CreateStatsList(pitcherStatsList []PitcherStats, batterStatsLis
 	return savedPitcherStatsCount, savedBatterStatsCount, tx.Commit().Error
 }
 
-func (c *Client) SearchPitchers(query string) ([]Pitcher, error) {
-	var pitchers []Pitcher
+func (c *Client) SearchPitchers(query string) ([]domain.Pitcher, error) {
+	var pitchers []domain.Pitcher
 	likeQuery := "%" + query + "%"
 	if err := c.db.Where("name LIKE ? OR kana LIKE ?", likeQuery, likeQuery).Find(&pitchers).Error; err != nil {
 		return nil, err
@@ -173,8 +154,8 @@ func (c *Client) SearchPitchers(query string) ([]Pitcher, error) {
 	return pitchers, nil
 }
 
-func (c *Client) SearchBatters(query string) ([]Batter, error) {
-	var batters []Batter
+func (c *Client) SearchBatters(query string) ([]domain.Batter, error) {
+	var batters []domain.Batter
 
 	likeQuery := "%" + kanaconv.HiraganaToKatakana(query) + "%"
 	if err := c.db.Where("name LIKE ? OR kana LIKE ?", likeQuery, likeQuery).Find(&batters).Error; err != nil {
@@ -189,7 +170,7 @@ func (c *Client) CloseDB() {
 }
 
 func (c *Client) getPitcherIDs() ([]int, error) {
-	var pitchers []Pitcher
+	var pitchers []domain.Pitcher
 	if err := c.db.Find(&pitchers).Error; err != nil {
 		return nil, err
 	}
@@ -203,7 +184,7 @@ func (c *Client) getPitcherIDs() ([]int, error) {
 }
 
 func (c *Client) getBatterIDs() ([]int, error) {
-	var batters []Batter
+	var batters []domain.Batter
 	if err := c.db.Find(&batters).Error; err != nil {
 		return nil, err
 	}
@@ -217,8 +198,8 @@ func (c *Client) getBatterIDs() ([]int, error) {
 }
 
 func (c *Client) doesPitcherStatsExists(tx *gorm.DB, pitcherID int, game *int) (bool, error) {
-	var existings []PitcherStats
-	if err := tx.Where(&PitcherStats{PitcherID: pitcherID, Game: game}).Find(&existings).Error; err != nil {
+	var existings []domain.PitcherStats
+	if err := tx.Where(&domain.PitcherStats{PitcherID: pitcherID, Game: game}).Find(&existings).Error; err != nil {
 		return false, err
 	}
 
@@ -226,8 +207,8 @@ func (c *Client) doesPitcherStatsExists(tx *gorm.DB, pitcherID int, game *int) (
 }
 
 func (c *Client) doesBatterStatsExists(tx *gorm.DB, batterID int, game *int) (bool, error) {
-	var existings []BatterStats
-	if err := tx.Where(&BatterStats{BatterID: batterID, Game: game}).Find(&existings).Error; err != nil {
+	var existings []domain.BatterStats
+	if err := tx.Where(&domain.BatterStats{BatterID: batterID, Game: game}).Find(&existings).Error; err != nil {
 		return false, err
 	}
 
