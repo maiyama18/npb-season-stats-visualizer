@@ -36,3 +36,20 @@ func (sc *StatsController) GetPitcherStats(c *gin.Context) {
 
 	c.JSON(http.StatusOK, constructPitcherStatsResponse(pitcher))
 }
+
+func (sc *StatsController) GetBatterStats(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, constructErrorResponse("id should be an integer. got: %s", idStr))
+		return
+	}
+
+	batter, err := sc.playerService.GetBatter(id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, constructErrorResponse("could not find batter with id %s", id))
+		return
+	}
+
+	c.JSON(http.StatusOK, constructBatterStatsResponse(batter))
+}

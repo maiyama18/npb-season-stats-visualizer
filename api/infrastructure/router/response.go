@@ -21,6 +21,11 @@ type PitcherStatsResponse struct {
 	Stats  PitcherStats
 }
 
+type BatterStatsResponse struct {
+	Player Player
+	Stats  BatterStats
+}
+
 type Player struct {
 	ID   int
 	Name string
@@ -53,6 +58,33 @@ type PitcherStats struct {
 	Average          FloatStat
 	Kbb              FloatStat
 	Whip             FloatStat
+}
+
+type BatterStats struct {
+	Game                       IntStat
+	Average                    FloatStat
+	PlateAppearance            IntStat
+	AtBat                      IntStat
+	Hit                        IntStat
+	Double                     IntStat
+	Triple                     IntStat
+	HomeRun                    IntStat
+	TotalBase                  IntStat
+	RunBattedIn                IntStat
+	Run                        IntStat
+	StrikeOut                  IntStat
+	Walk                       IntStat
+	HitByPitch                 IntStat
+	Sacrifice                  IntStat
+	SacrificeFly               IntStat
+	StolenBase                 IntStat
+	CaughtStealing             IntStat
+	DoublePlay                 IntStat
+	OnBasePercent              FloatStat
+	SluggingPercent            FloatStat
+	Ops                        FloatStat
+	AverageWithScoringPosition FloatStat
+	Error                      IntStat
 }
 
 type IntStat struct {
@@ -108,7 +140,6 @@ func constructPitcherStatsResponse(pitcher domain.Pitcher) PitcherStatsResponse 
 	for _, pStats := range pitcher.PitcherStatsList {
 		date := pStats.Date.Format("2006-01-02")
 
-		fmt.Println(date, *pStats.Game)
 		if pStats.Game != nil {
 			game.addDataPoint(date, *pStats.Game)
 		}
@@ -219,4 +250,118 @@ func constructPitcherStatsResponse(pitcher domain.Pitcher) PitcherStatsResponse 
 	}
 
 	return PitcherStatsResponse{Player: player, Stats: stats}
+}
+
+func constructBatterStatsResponse(batter domain.Batter) BatterStatsResponse {
+	player := Player{ID: batter.ID, Name: batter.Name}
+
+	var game, plateAppearance, atBat, hit, double, triple, homeRun, totalBase, runBattedIn, run, strikeOut, walk, hitByPitch, sacrifice, sacrificeFly,
+		stolenBase, caughtStealing, doublePlay, errorCount IntStat
+	var average, onBasePercent, sluggingPercent, ops, averageWithScoringPosition FloatStat
+
+	for _, bStats := range batter.BatterStatsList {
+		date := bStats.Date.Format("2006-01-02")
+
+		if bStats.Game != nil {
+			game.addDataPoint(date, *bStats.Game)
+		}
+		if bStats.Average != nil {
+			average.addDataPoint(date, *bStats.Average)
+		}
+		if bStats.PlateAppearance != nil {
+			plateAppearance.addDataPoint(date, *bStats.PlateAppearance)
+		}
+		if bStats.AtBat != nil {
+			atBat.addDataPoint(date, *bStats.AtBat)
+		}
+		if bStats.Hit != nil {
+			hit.addDataPoint(date, *bStats.Hit)
+		}
+		if bStats.Double != nil {
+			double.addDataPoint(date, *bStats.Double)
+		}
+		if bStats.Triple != nil {
+			triple.addDataPoint(date, *bStats.Triple)
+		}
+		if bStats.HomeRun != nil {
+			homeRun.addDataPoint(date, *bStats.HomeRun)
+		}
+		if bStats.TotalBase != nil {
+			totalBase.addDataPoint(date, *bStats.TotalBase)
+		}
+		if bStats.RunBattedIn != nil {
+			runBattedIn.addDataPoint(date, *bStats.RunBattedIn)
+		}
+		if bStats.Run != nil {
+			run.addDataPoint(date, *bStats.Run)
+		}
+		if bStats.StrikeOut != nil {
+			strikeOut.addDataPoint(date, *bStats.StrikeOut)
+		}
+		if bStats.Walk != nil {
+			walk.addDataPoint(date, *bStats.Walk)
+		}
+		if bStats.HitByPitch != nil {
+			hitByPitch.addDataPoint(date, *bStats.HitByPitch)
+		}
+		if bStats.Sacrifice != nil {
+			sacrifice.addDataPoint(date, *bStats.Sacrifice)
+		}
+		if bStats.SacrificeFly != nil {
+			sacrificeFly.addDataPoint(date, *bStats.SacrificeFly)
+		}
+		if bStats.StolenBase != nil {
+			stolenBase.addDataPoint(date, *bStats.StolenBase)
+		}
+		if bStats.CaughtStealing != nil {
+			caughtStealing.addDataPoint(date, *bStats.CaughtStealing)
+		}
+		if bStats.DoublePlay != nil {
+			doublePlay.addDataPoint(date, *bStats.DoublePlay)
+		}
+		if bStats.OnBasePercent != nil {
+			onBasePercent.addDataPoint(date, *bStats.OnBasePercent)
+		}
+		if bStats.SluggingPercent != nil {
+			sluggingPercent.addDataPoint(date, *bStats.SluggingPercent)
+		}
+		if bStats.Ops != nil {
+			ops.addDataPoint(date, *bStats.Ops)
+		}
+		if bStats.AverageWithScoringPosition != nil {
+			averageWithScoringPosition.addDataPoint(date, *bStats.AverageWithScoringPosition)
+		}
+		if bStats.Error != nil {
+			errorCount.addDataPoint(date, *bStats.Error)
+		}
+	}
+
+	stats := BatterStats{
+		Game:                       game,
+		Average:                    average,
+		PlateAppearance:            plateAppearance,
+		AtBat:                      atBat,
+		Hit:                        hit,
+		Double:                     double,
+		Triple:                     triple,
+		HomeRun:                    homeRun,
+		TotalBase:                  totalBase,
+		RunBattedIn:                runBattedIn,
+		Run:                        run,
+		StrikeOut:                  strikeOut,
+		Walk:                       walk,
+		HitByPitch:                 hitByPitch,
+		Sacrifice:                  sacrifice,
+		SacrificeFly:               sacrificeFly,
+		StolenBase:                 stolenBase,
+		CaughtStealing:             caughtStealing,
+		DoublePlay:                 doublePlay,
+		OnBasePercent:              onBasePercent,
+		SluggingPercent:            sluggingPercent,
+		Ops:                        ops,
+		AverageWithScoringPosition: averageWithScoringPosition,
+		Error:                      errorCount,
+	}
+
+	return BatterStatsResponse{Player: player, Stats: stats}
 }

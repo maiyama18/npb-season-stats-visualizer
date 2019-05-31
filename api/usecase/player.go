@@ -6,6 +6,7 @@ type PlayerRepository interface {
 	SearchPitchers(query string) ([]domain.Pitcher, error)
 	SearchBatters(query string) ([]domain.Batter, error)
 	GetPitcher(playerID int) (domain.Pitcher, error)
+	GetBatter(playerID int) (domain.Batter, error)
 }
 
 type PlayerService struct {
@@ -34,4 +35,8 @@ func (ps *PlayerService) SearchBatters(query string) ([]domain.Batter, error) {
 
 func (ps *PlayerService) GetPitcher(playerID int) (domain.Pitcher, error) {
 	return ps.playerRepository.GetPitcher(playerID)
+}
+
+func (ps *PlayerService) GetBatter(playerID int) (domain.Batter, error) {
+	return ps.playerRepository.GetBatter(playerID)
 }
