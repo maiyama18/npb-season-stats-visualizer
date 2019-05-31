@@ -16,10 +16,12 @@ type Player struct {
 
 type Pitcher struct {
 	Player
+	PitcherStatsList []PitcherStats `gorm:"foreignkey:PitcherID"`
 }
 
 type Batter struct {
 	Player
+	BatterStatsList []BatterStats `gorm:"foreignkey:BatterID"`
 }
 
 type PitcherStats struct {

@@ -19,11 +19,13 @@ func Run() error {
 	}
 
 	playerController := NewPlayerController(gdb)
+	statsController := NewStatsController(gdb)
 
 	api := r.Group("/api")
 	{
 		api.GET("/search/pitchers", func(c *gin.Context) { playerController.SearchPitchers(c) })
 		api.GET("/search/batters", func(c *gin.Context) { playerController.SearchBatters(c) })
+		api.GET("/stats/pitcher/:id", func(c *gin.Context) { statsController.GetPitcherStats(c) })
 	}
 
 	port := getEnv("SERVER_PORT", "8080")

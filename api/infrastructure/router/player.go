@@ -25,33 +25,33 @@ func NewPlayerController(gdb *gorm.DB) *PlayerController {
 func (pc *PlayerController) SearchPitchers(c *gin.Context) {
 	queries, ok := c.Request.URL.Query()["query"]
 	if !ok {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "query parameter should be specified"})
+		c.JSON(http.StatusBadRequest, constructErrorResponse("query parameter should be specified"))
 		return
 	}
 	query := queries[0]
 
 	pitchers, err := pc.playerService.SearchPitchers(query)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ConstructErrorResponse(fmt.Sprintf("search failed: %s", err)))
+		c.JSON(http.StatusBadRequest, constructErrorResponse(fmt.Sprintf("search failed: %s", err)))
 		return
 	}
 
-	c.JSON(http.StatusOK, ConstructPlayerSearchResponseFromPitchers(query, pitchers))
+	c.JSON(http.StatusOK, constructPlayerSearchResponseFromPitchers(query, pitchers))
 }
 
 func (pc *PlayerController) SearchBatters(c *gin.Context) {
 	queries, ok := c.Request.URL.Query()["query"]
 	if !ok {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "query parameter should be specified"})
+		c.JSON(http.StatusBadRequest, constructErrorResponse("query parameter should be specified"))
 		return
 	}
 	query := queries[0]
 
 	batters, err := pc.playerService.SearchBatters(query)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, ConstructErrorResponse(fmt.Sprintf("search failed: %s", err)))
+		c.JSON(http.StatusBadRequest, constructErrorResponse(fmt.Sprintf("search failed: %s", err)))
 		return
 	}
 
-	c.JSON(http.StatusOK, ConstructPlayerSearchResponseFromBatters(query, batters))
+	c.JSON(http.StatusOK, constructPlayerSearchResponseFromBatters(query, batters))
 }

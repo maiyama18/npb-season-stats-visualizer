@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"github.com/jinzhu/gorm"
 	"github.com/mui87/npb-season-stats-visualizer/domain"
 )
@@ -31,4 +33,15 @@ func (pr *PlayerRepository) SearchBatters(query string) ([]domain.Batter, error)
 	}
 
 	return batters, nil
+}
+
+func (pr *PlayerRepository) GetPitcher(playerID int) (domain.Pitcher, error) {
+	var pitcher domain.Pitcher
+	if err := pr.db.Preload("PitcherStatsList").Find(&pitcher, playerID).Error; err != nil {
+		return domain.Pitcher{}, err
+	}
+
+	fmt.Printf("%+v\n", pitcher.PitcherStatsList)
+
+	return pitcher, nil
 }

@@ -5,6 +5,7 @@ import "github.com/mui87/npb-season-stats-visualizer/domain"
 type PlayerRepository interface {
 	SearchPitchers(query string) ([]domain.Pitcher, error)
 	SearchBatters(query string) ([]domain.Batter, error)
+	GetPitcher(playerID int) (domain.Pitcher, error)
 }
 
 type PlayerService struct {
@@ -24,5 +25,13 @@ func (ps *PlayerService) SearchPitchers(query string) ([]domain.Pitcher, error) 
 }
 
 func (ps *PlayerService) SearchBatters(query string) ([]domain.Batter, error) {
+	if query == "" {
+		return []domain.Batter{}, nil
+	}
+
 	return ps.playerRepository.SearchBatters(query)
+}
+
+func (ps *PlayerService) GetPitcher(playerID int) (domain.Pitcher, error) {
+	return ps.playerRepository.GetPitcher(playerID)
 }
