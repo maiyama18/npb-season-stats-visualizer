@@ -10,6 +10,10 @@ empty_db:
 	mysql -h ${DB_HOST} --port ${DB_PORT} -u${DB_USER} -p${DB_PASSWORD} -e "drop database ${DB_SCHEMA}; create database ${DB_SCHEMA}"
 login_db:
 	mysql -h ${DB_HOST} --port ${DB_PORT} -u${DB_USER} -p${DB_PASSWORD} ${DB_SCHEMA}
+build_crawler:
+	GOOS=linux GOARCH=amd64 go build -o crawler crawl/main.go
+build_server:
+	GOOS=linux GOARCH=amd64 go build -o server api/main.go
 crawl:
 	go run crawl/main.go
 server:
