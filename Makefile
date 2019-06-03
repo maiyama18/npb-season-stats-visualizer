@@ -1,8 +1,9 @@
-.PHONY: setup_db teardown_db crawl
+.PHONY: setup_db teardown_db empty_db login_db build_crawler build_server crawl server
 
-setup_db:
+boot_db:
 	docker-compose up -d
 	sleep 20 # wait mysql initialization
+create_schema:
 	mysql -h ${DB_HOST} --port ${DB_PORT} -u${DB_USER} -p${DB_PASSWORD} -e "create database ${DB_SCHEMA}"
 teardown_db:
 	docker-compose down

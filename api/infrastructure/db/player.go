@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/jinzhu/gorm"
+	"github.com/miiton/kanaconv"
 	"github.com/mui87/npb-season-stats-visualizer/domain"
 )
 
@@ -15,7 +16,7 @@ func NewPlayerRepository(db *gorm.DB) *PlayerRepository {
 
 func (pr *PlayerRepository) SearchPitchers(query string) ([]domain.Pitcher, error) {
 	var pitchers []domain.Pitcher
-	likeQuery := "%" + query + "%"
+	likeQuery := "%" + kanaconv.HiraganaToKatakana(query) + "%"
 	if err := pr.db.Where("name LIKE ? OR kana LIKE ?", likeQuery, likeQuery).Find(&pitchers).Error; err != nil {
 		return nil, err
 	}
@@ -25,7 +26,7 @@ func (pr *PlayerRepository) SearchPitchers(query string) ([]domain.Pitcher, erro
 
 func (pr *PlayerRepository) SearchBatters(query string) ([]domain.Batter, error) {
 	var batters []domain.Batter
-	likeQuery := "%" + query + "%"
+	likeQuery := "%" + kanaconv.HiraganaToKatakana(query) + "%"
 	if err := pr.db.Where("name LIKE ? OR kana LIKE ?", likeQuery, likeQuery).Find(&batters).Error; err != nil {
 		return nil, err
 	}
