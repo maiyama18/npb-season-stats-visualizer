@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	defaultBaseURL    = "https://baseball.yahoo.co.jp/npb"
-	defaultDelayMsStr = "2000"
+	defaultBaseURL          = "https://baseball.yahoo.co.jp/npb"
+	defaultDelayMsStr       = "2000"
+	defaultMaxRetryCountStr = "3"
 )
 
 var teamIDs = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 376}
@@ -34,10 +35,16 @@ func New(logger *log.Logger) (*CLI, error) {
 	delayMsStr := getEnv("SCRAPE_DELAY_MS", defaultDelayMsStr)
 	delayMs, err := strconv.Atoi(delayMsStr)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get SCRAPE_DELAY_MS: %scraper", err)
+		return nil, fmt.Errorf("failed to get SCRAPE_DELAY_MS: %s", err)
 	}
 
-	scraper, err := npbweb.NewScraper(baseURL, time.Duration(delayMs)*time.Millisecond)
+	maxRetryCountStr := getEnv("SCRAPE_MAX_RETRY", defaultMaxRetryCountStr)
+	maxRetryCount, err := strconv.Atoi(maxRetryCountStr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get SCRAPE_MAX_RETRY: %s", err)
+	}
+
+	scraper, err := npbweb.NewScraper(baseURL, time.Duration(delayMs)*time.Millisecond, maxRetryCount, logger)
 	if err != nil {
 		return nil, err
 	}

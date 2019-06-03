@@ -2,6 +2,7 @@ package npbweb
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -12,11 +13,16 @@ import (
 const idCol = 1
 
 type Scraper struct {
-	baseURL   string
+	baseURL       string
+	maxRetryCount int
+
+	visitedURLs map[string]bool
+
 	collector *colly.Collector
+	logger    *log.Logger
 }
 
-func NewScraper(baseURL string, randomDelay time.Duration) (*Scraper, error) {
+func NewScraper(baseURL string, randomDelay time.Duration, maxRetryCount int, logger *log.Logger) (*Scraper, error) {
 	collector := colly.NewCollector()
 	err := collector.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
@@ -28,8 +34,11 @@ func NewScraper(baseURL string, randomDelay time.Duration) (*Scraper, error) {
 	}
 
 	return &Scraper{
-		baseURL:   baseURL,
-		collector: collector,
+		baseURL:       baseURL,
+		maxRetryCount: maxRetryCount,
+		visitedURLs:   make(map[string]bool),
+		collector:     collector,
+		logger:        logger,
 	}, nil
 }
 
@@ -86,13 +95,40 @@ func (c *Scraper) scrapeRows(url string) ([][]string, error) {
 		rows = append(rows, row)
 	})
 
-	if err := c.collector.Visit(url); err != nil {
-		return nil, err
-	}
+	reqErr := c.visitWithRetry(url)
 
 	c.collector.OnHTMLDetach(`table.NpbPlSt > tbody > tr`)
 
-	return rows, nil
+	if reqErr != nil {
+		return nil, reqErr
+	} else {
+		return rows, nil
+	}
+}
+
+func (c *Scraper) visitWithRetry(url string) error {
+	var reqErr error
+
+	retryCount := 0
+	c.collector.OnError(func(r *colly.Response, err error) {
+		if _, exist := c.visitedURLs[url]; exist {
+			return
+		}
+
+		retryCount++
+		if retryCount <= 3 {
+			c.logger.Printf("request to %s failed: %s. retry: %d\n", url, err, retryCount)
+			_ = r.Request.Retry()
+		} else {
+			reqErr = err
+		}
+	})
+
+	_ = c.collector.Visit(url)
+
+	c.visitedURLs[url] = true
+
+	return reqErr
 }
 
 func (c *Scraper) filterRows(rows [][]string) [][]string {

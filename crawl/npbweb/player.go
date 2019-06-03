@@ -35,13 +35,15 @@ func (c *Scraper) scrapePlayer(url string) (Player, error) {
 		}
 	})
 
-	if err := c.collector.Visit(url); err != nil {
-		return Player{}, err
-	}
+	reqErr := c.visitWithRetry(url)
 
 	c.collector.OnHTMLDetach(`div.PlayerAdBox h1`)
 
-	return player, nil
+	if reqErr != nil {
+		return Player{}, reqErr
+	} else {
+		return player, nil
+	}
 }
 
 func extractNames(text string) (string, string) {
