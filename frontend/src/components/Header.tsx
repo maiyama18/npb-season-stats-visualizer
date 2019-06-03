@@ -12,7 +12,7 @@ export const Header = () => {
       style={{ marginBottom: '1rem' }}
     >
       <Container>
-        <Menu.Item fitted={'horizontally'}>title</Menu.Item>
+        <Menu.Item fitted={'horizontally'}>NPB Season Stats Visualizer</Menu.Item>
       </Container>
     </Menu>
   );
