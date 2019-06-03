@@ -8,3 +8,7 @@ npb-season-stats-visualizer
 crawler
 server
 
+# frontend
+dist
+node_modules
+.cache
