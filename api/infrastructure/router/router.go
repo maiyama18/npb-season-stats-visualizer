@@ -27,8 +27,8 @@ func Run() error {
 	{
 		api.GET("/search/pitchers", func(c *gin.Context) { playerController.SearchPitchers(c) })
 		api.GET("/search/batters", func(c *gin.Context) { playerController.SearchBatters(c) })
-		api.GET("/stats/pitcher/:id", func(c *gin.Context) { statsController.GetPitcherStats(c) })
-		api.GET("/stats/batter/:id", func(c *gin.Context) { statsController.GetBatterStats(c) })
+		api.GET("/stats/pitchers/:id", func(c *gin.Context) { statsController.GetPitcherStats(c) })
+		api.GET("/stats/batters/:id", func(c *gin.Context) { statsController.GetBatterStats(c) })
 	}
 
 	port := getEnv("SERVER_PORT", "8080")
