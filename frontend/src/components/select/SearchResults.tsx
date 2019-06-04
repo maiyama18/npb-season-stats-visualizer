@@ -11,7 +11,7 @@ interface StateProps {
 
 const SearchResults = (props: StateProps) => (
   <div>
-    <Header as="h6">検索結果</Header>
+    <Header as="h5">検索結果</Header>
     <List divided relaxed>
       {props.candidates.map(c => (
         <List.Item key={c.id}>
