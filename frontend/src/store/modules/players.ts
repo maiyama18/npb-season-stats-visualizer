@@ -1,4 +1,4 @@
-import { Action, Candidate, PayloadedAction, Player, PlayersType } from '../types';
+import { Action, Candidate, PayloadedAction, Player, PlayersType, StatType } from '../types';
 import { Dispatch, Reducer } from 'redux';
 import axiosBase, { AxiosResponse } from 'axios';
 import { AppState } from '../reducers';
@@ -10,6 +10,7 @@ export interface PlayersState {
   candidates: Candidate[];
   selecting: boolean;
   selectedPlayers: Player[];
+  graphStat: StatType;
 }
 
 export type PlayersAction =
@@ -20,7 +21,8 @@ export type PlayersAction =
   | PayloadedAction<'START_SELECT', { id: number }>
   | PayloadedAction<'FINISH_SELECT_SUCCESS', { player: Player }>
   | Action<'FINISH_SELECT_FAILURE'>
-  | PayloadedAction<'UNSELECT_PLAYER', { id: number }>;
+  | PayloadedAction<'UNSELECT_PLAYER', { id: number }>
+  | PayloadedAction<'CHANGE_GRAPH_STAT', { graphStat: StatType }>;
 
 export const initialPlayersState: PlayersState = {
   playersType: 'batters',
@@ -29,6 +31,7 @@ export const initialPlayersState: PlayersState = {
   candidates: [],
   selecting: false,
   selectedPlayers: [],
+  graphStat: 'game',
 };
 
 const startSearch = (query: string): PlayersAction => ({
@@ -67,6 +70,12 @@ export const unselectPlayer = (id: number): PlayersAction => ({
   type: 'UNSELECT_PLAYER',
   payload: {
     id,
+  },
+});
+export const changeGraphStat = (graphStat: StatType): PlayersAction => ({
+  type: 'CHANGE_GRAPH_STAT',
+  payload: {
+    graphStat,
   },
 });
 
@@ -122,6 +131,11 @@ export const playersReducer: Reducer<PlayersState, PlayersAction> = (
       return {
         ...state,
         selectedPlayers: state.selectedPlayers.filter(p => p.id != action.payload.id),
+      };
+    case 'CHANGE_GRAPH_STAT':
+      return {
+        ...state,
+        graphStat: action.payload.graphStat,
       };
     default:
       return state;

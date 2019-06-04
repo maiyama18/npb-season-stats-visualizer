@@ -16,7 +16,7 @@ interface StateProps {
 type DispatchProps = typeof actions;
 
 interface PlayerTypeOption {
-  key: string;
+  key: PlayersType;
   text: string;
   value: PlayersType;
 }
