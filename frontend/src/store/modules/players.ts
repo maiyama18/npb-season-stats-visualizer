@@ -19,7 +19,8 @@ export type PlayersAction =
   | PayloadedAction<'CHANGE_PLAYERS_TYPE', { playersType: PlayersType }>
   | PayloadedAction<'START_SELECT', { id: number }>
   | PayloadedAction<'FINISH_SELECT_SUCCESS', { player: Player }>
-  | Action<'FINISH_SELECT_FAILURE'>;
+  | Action<'FINISH_SELECT_FAILURE'>
+  | PayloadedAction<'UNSELECT_PLAYER', { id: number }>;
 
 export const initialPlayersState: PlayersState = {
   playersType: 'batters',
@@ -62,6 +63,12 @@ const finishSelectSuccess = (player: Player): PlayersAction => ({
 const finishSelectFailure = (): PlayersAction => ({
   type: 'FINISH_SELECT_FAILURE',
 });
+export const unselectPlayer = (id: number): PlayersAction => ({
+  type: 'UNSELECT_PLAYER',
+  payload: {
+    id,
+  },
+});
 
 export const playersReducer: Reducer<PlayersState, PlayersAction> = (
   state: PlayersState = initialPlayersState,
@@ -89,6 +96,9 @@ export const playersReducer: Reducer<PlayersState, PlayersAction> = (
       return {
         ...state,
         playersType: action.payload.playersType,
+        query: '',
+        candidates: [],
+        selectedPlayers: [],
       };
     case 'START_SELECT':
       return {
@@ -98,6 +108,8 @@ export const playersReducer: Reducer<PlayersState, PlayersAction> = (
     case 'FINISH_SELECT_SUCCESS':
       return {
         ...state,
+        query: '',
+        candidates: [],
         selectedPlayers: [...state.selectedPlayers, action.payload.player],
         selecting: false,
       };
@@ -105,6 +117,11 @@ export const playersReducer: Reducer<PlayersState, PlayersAction> = (
       return {
         ...state,
         selecting: false,
+      };
+    case 'UNSELECT_PLAYER':
+      return {
+        ...state,
+        selectedPlayers: state.selectedPlayers.filter(p => p.id != action.payload.id),
       };
     default:
       return state;

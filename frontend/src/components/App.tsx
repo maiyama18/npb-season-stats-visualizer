@@ -3,6 +3,7 @@ import { Grid, Container, Divider } from 'semantic-ui-react';
 import { Header } from './Header';
 import SearchForm from './select/SearchForm';
 import SearchResults from './select/SearchResults';
+import SelectedPlayers from './select/SelectedPlayers';
 
 export const App = () => {
   return (
@@ -20,7 +21,9 @@ export const App = () => {
                 <SearchResults />
               </div>
               <Divider />
-              <div style={{ height: '200px', overflowY: 'scroll', background: 'green' }} />
+              <div style={{ height: '200px', overflowY: 'scroll' }}>
+                <SelectedPlayers />
+              </div>
             </Grid.Column>
             <Grid.Column width={12}>
               <div style={{ height: '65px', background: 'purple' }} />
