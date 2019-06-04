@@ -90,6 +90,13 @@ type IntStat struct {
 	Values []int    `json:"values"`
 }
 
+func newIntStat() IntStat {
+	return IntStat{
+		Dates:  make([]string, 0),
+		Values: make([]int, 0),
+	}
+}
+
 func (is *IntStat) addDataPoint(date string, value int) {
 	is.Dates = append(is.Dates, date)
 	is.Values = append(is.Values, value)
@@ -98,6 +105,13 @@ func (is *IntStat) addDataPoint(date string, value int) {
 type FloatStat struct {
 	Dates  []string  `json:"dates"`
 	Values []float64 `json:"values"`
+}
+
+func newFloatStat() FloatStat {
+	return FloatStat{
+		Dates:  make([]string, 0),
+		Values: make([]float64, 0),
+	}
 }
 
 func (fs *FloatStat) addDataPoint(date string, value float64) {
@@ -131,9 +145,33 @@ func constructPlayerSearchResponseFromBatters(batters []domain.Batter) PlayerSea
 func constructPitcherStatsResponse(pitcher domain.Pitcher) PitcherStatsResponse {
 	player := Player{ID: pitcher.ID, Name: pitcher.Name}
 
-	var game, gameStart, complete, shutOut, qualityStart, win, lose, hold, holdPoint,
-		save, hit, homeRun, strikeOut, walk, hitByPitch, wildPitch, balk, run, earnedRun IntStat
-	var era, winPercent, inning, strikeOutPercent, average, kbb, whip FloatStat
+	game := newIntStat()
+	gameStart := newIntStat()
+	complete := newIntStat()
+	shutOut := newIntStat()
+	qualityStart := newIntStat()
+	win := newIntStat()
+	lose := newIntStat()
+	hold := newIntStat()
+	holdPoint := newIntStat()
+	save := newIntStat()
+	hit := newIntStat()
+	homeRun := newIntStat()
+	strikeOut := newIntStat()
+	walk := newIntStat()
+	hitByPitch := newIntStat()
+	wildPitch := newIntStat()
+	balk := newIntStat()
+	run := newIntStat()
+	earnedRun := newIntStat()
+
+	era := newFloatStat()
+	winPercent := newFloatStat()
+	inning := newFloatStat()
+	strikeOutPercent := newFloatStat()
+	average := newFloatStat()
+	kbb := newFloatStat()
+	whip := newFloatStat()
 
 	for _, pStats := range pitcher.PitcherStatsList {
 		date := pStats.Date.Format("2006-01-02")
@@ -253,9 +291,35 @@ func constructPitcherStatsResponse(pitcher domain.Pitcher) PitcherStatsResponse 
 func constructBatterStatsResponse(batter domain.Batter) BatterStatsResponse {
 	player := Player{ID: batter.ID, Name: batter.Name}
 
-	var game, plateAppearance, atBat, hit, double, triple, homeRun, totalBase, runBattedIn, run, strikeOut, walk, hitByPitch, sacrifice, sacrificeFly,
-		stolenBase, caughtStealing, doublePlay, errorCount IntStat
-	var average, onBasePercent, sluggingPercent, ops, averageWithScoringPosition FloatStat
+	//var game, plateAppearance, atBat, hit, double, triple, homeRun, totalBase, runBattedIn, run, strikeOut, walk, hitByPitch, sacrifice, sacrificeFly,
+	//	stolenBase, caughtStealing, doublePlay, errorCount IntStat
+	//var average, onBasePercent, sluggingPercent, ops, averageWithScoringPosition FloatStat
+
+	game := newIntStat()
+	plateAppearance := newIntStat()
+	atBat := newIntStat()
+	hit := newIntStat()
+	double := newIntStat()
+	triple := newIntStat()
+	homeRun := newIntStat()
+	totalBase := newIntStat()
+	runBattedIn := newIntStat()
+	run := newIntStat()
+	strikeOut := newIntStat()
+	walk := newIntStat()
+	hitByPitch := newIntStat()
+	sacrifice := newIntStat()
+	sacrificeFly := newIntStat()
+	stolenBase := newIntStat()
+	caughtStealing := newIntStat()
+	doublePlay := newIntStat()
+	errorCount := newIntStat()
+
+	average := newFloatStat()
+	onBasePercent := newFloatStat()
+	sluggingPercent := newFloatStat()
+	ops := newFloatStat()
+	averageWithScoringPosition := newFloatStat()
 
 	for _, bStats := range batter.BatterStatsList {
 		date := bStats.Date.Format("2006-01-02")
