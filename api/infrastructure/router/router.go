@@ -7,11 +7,13 @@ import (
 
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func Run() error {
 	r := gin.Default()
+	r.Use(cors.Default())
 
 	gdb, err := db.NewGormDB()
 	if err != nil {
