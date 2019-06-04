@@ -55,13 +55,7 @@ const mapStateToProps = (state: AppState): StateProps => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
-  ...bindActionCreators(
-    {
-      changePlayersType,
-      changeQueryThunk,
-    },
-    dispatch
-  ),
+  ...bindActionCreators(actions, dispatch),
 });
 
 export default connect(

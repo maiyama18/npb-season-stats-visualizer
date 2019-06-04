@@ -16,7 +16,10 @@ export type PlayersAction =
   | PayloadedAction<'START_SEARCH', { query: string }>
   | PayloadedAction<'FINISH_SEARCH_SUCCESS', { candidates: Candidate[] }>
   | Action<'FINISH_SEARCH_FAILURE'>
-  | PayloadedAction<'CHANGE_PLAYERS_TYPE', { playersType: PlayersType }>;
+  | PayloadedAction<'CHANGE_PLAYERS_TYPE', { playersType: PlayersType }>
+  | PayloadedAction<'START_SELECT', { id: number }>
+  | PayloadedAction<'FINISH_SELECT_SUCCESS', { player: Player }>
+  | Action<'FINISH_SELECT_FAILURE'>;
 
 export const initialPlayersState: PlayersState = {
   playersType: 'batters',
@@ -46,6 +49,19 @@ export const changePlayersType = (playersType: PlayersType): PlayersAction => ({
     playersType,
   },
 });
+const startSelect = (id: number): PlayersAction => ({
+  type: 'START_SELECT',
+  payload: { id },
+});
+const finishSelectSuccess = (player: Player): PlayersAction => ({
+  type: 'FINISH_SELECT_SUCCESS',
+  payload: {
+    player,
+  },
+});
+const finishSelectFailure = (): PlayersAction => ({
+  type: 'FINISH_SELECT_FAILURE',
+});
 
 export const playersReducer: Reducer<PlayersState, PlayersAction> = (
   state: PlayersState = initialPlayersState,
@@ -74,10 +90,34 @@ export const playersReducer: Reducer<PlayersState, PlayersAction> = (
         ...state,
         playersType: action.payload.playersType,
       };
+    case 'START_SELECT':
+      return {
+        ...state,
+        selecting: true,
+      };
+    case 'FINISH_SELECT_SUCCESS':
+      return {
+        ...state,
+        selectedPlayers: [...state.selectedPlayers, action.payload.player],
+        selecting: false,
+      };
+    case 'FINISH_SELECT_FAILURE':
+      return {
+        ...state,
+        selecting: false,
+      };
     default:
       return state;
   }
 };
+
+const axios = axiosBase.create({
+  baseURL: 'http://localhost:8080',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  responseType: 'json',
+});
 
 export const changeQueryThunk = (query: string) => async (dispatch: Dispatch, getState: () => AppState) => {
   if (query === '') {
@@ -89,13 +129,6 @@ export const changeQueryThunk = (query: string) => async (dispatch: Dispatch, ge
   dispatch(startSearch(query));
   try {
     const { playersType } = getState().players;
-    const axios = axiosBase.create({
-      baseURL: 'http://localhost:8080',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      responseType: 'json',
-    });
     const candidatesResp: AxiosResponse = await axios.get(`/api/search/${playersType}`, {
       params: {
         query,
@@ -106,5 +139,22 @@ export const changeQueryThunk = (query: string) => async (dispatch: Dispatch, ge
   } catch (err) {
     console.error(err);
     dispatch(finishSearchFailure());
+  }
+};
+
+export const selectPlayerThunk = (id: number) => async (dispatch: Dispatch, getState: () => AppState) => {
+  dispatch(startSelect(id));
+  try {
+    const { playersType } = getState().players;
+    const playerResp: AxiosResponse = await axios.get(`/api/stats/${playersType}/${id}`);
+    const player: Player = {
+      id: playerResp.data.player.id,
+      name: playerResp.data.player.name,
+      stats: playerResp.data.stats,
+    };
+    dispatch(finishSelectSuccess(player));
+  } catch (err) {
+    console.error(err);
+    dispatch(finishSelectFailure());
   }
 };

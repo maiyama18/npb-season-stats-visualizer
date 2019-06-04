@@ -4,12 +4,17 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 import { AppState } from '../../store/reducers';
 import { Candidate } from '../../store/types';
+import { selectPlayerThunk } from '../../store/modules/players';
+
+const actions = { selectPlayerThunk };
 
 interface StateProps {
   candidates: Candidate[];
 }
 
-const SearchResults = (props: StateProps) => (
+type DispatchProps = typeof actions;
+
+const SearchResults = (props: StateProps & DispatchProps) => (
   <div>
     <Header as="h5">検索結果</Header>
     <List divided relaxed>
@@ -20,6 +25,7 @@ const SearchResults = (props: StateProps) => (
               href="/"
               onClick={e => {
                 e.preventDefault();
+                props.selectPlayerThunk(c.id);
               }}
             >
               <Icon name="plus square" />
@@ -35,8 +41,8 @@ const SearchResults = (props: StateProps) => (
 const mapStateToProps = (state: AppState): StateProps => ({
   candidates: state.players.candidates,
 });
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  ...bindActionCreators({}, dispatch),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  ...bindActionCreators(actions, dispatch),
 });
 
 export default connect(
