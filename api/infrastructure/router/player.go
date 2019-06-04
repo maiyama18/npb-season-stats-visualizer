@@ -36,7 +36,7 @@ func (pc *PlayerController) SearchPitchers(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, constructPlayerSearchResponseFromPitchers(query, pitchers))
+	c.JSON(http.StatusOK, constructPlayerSearchResponseFromPitchers(pitchers))
 }
 
 func (pc *PlayerController) SearchBatters(c *gin.Context) {
@@ -53,5 +53,5 @@ func (pc *PlayerController) SearchBatters(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, constructPlayerSearchResponseFromBatters(query, batters))
+	c.JSON(http.StatusOK, constructPlayerSearchResponseFromBatters(batters))
 }

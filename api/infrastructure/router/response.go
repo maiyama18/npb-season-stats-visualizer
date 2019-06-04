@@ -7,28 +7,26 @@ import (
 )
 
 type ErrorResponse struct {
-	Error string
+	Error string `json:"error"`
 }
 
 type PlayerSearchResponse struct {
-	Query      string
-	PlayerType string
-	Players    []Player
+	Players []Player `json:"players"`
 }
 
 type PitcherStatsResponse struct {
-	Player Player
-	Stats  PitcherStats
+	Player Player       `json:"player"`
+	Stats  PitcherStats `json:"stats"`
 }
 
 type BatterStatsResponse struct {
-	Player Player
-	Stats  BatterStats
+	Player Player      `json:"player"`
+	Stats  BatterStats `json:"stats"`
 }
 
 type Player struct {
-	ID   int
-	Name string
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 type PitcherStats struct {
@@ -88,8 +86,8 @@ type BatterStats struct {
 }
 
 type IntStat struct {
-	Dates  []string
-	Values []int
+	Dates  []string `json:"dates"`
+	Values []int    `json:"values"`
 }
 
 func (is *IntStat) addDataPoint(date string, value int) {
@@ -98,8 +96,8 @@ func (is *IntStat) addDataPoint(date string, value int) {
 }
 
 type FloatStat struct {
-	Dates  []string
-	Values []float64
+	Dates  []string  `json:"dates"`
+	Values []float64 `json:"values"`
 }
 
 func (fs *FloatStat) addDataPoint(date string, value float64) {
@@ -112,22 +110,22 @@ func constructErrorResponse(format string, a ...interface{}) ErrorResponse {
 	return ErrorResponse{Error: errMsg}
 }
 
-func constructPlayerSearchResponseFromPitchers(query string, pitchers []domain.Pitcher) PlayerSearchResponse {
-	var players []Player
+func constructPlayerSearchResponseFromPitchers(pitchers []domain.Pitcher) PlayerSearchResponse {
+	players := make([]Player, 0)
 	for _, p := range pitchers {
 		players = append(players, Player{ID: p.ID, Name: p.Name})
 	}
 
-	return PlayerSearchResponse{Query: query, PlayerType: "pitcher", Players: players}
+	return PlayerSearchResponse{Players: players}
 }
 
-func constructPlayerSearchResponseFromBatters(query string, batters []domain.Batter) PlayerSearchResponse {
-	var players []Player
+func constructPlayerSearchResponseFromBatters(batters []domain.Batter) PlayerSearchResponse {
+	players := make([]Player, 0)
 	for _, p := range batters {
 		players = append(players, Player{ID: p.ID, Name: p.Name})
 	}
 
-	return PlayerSearchResponse{Query: query, PlayerType: "batter", Players: players}
+	return PlayerSearchResponse{Players: players}
 }
 
 func constructPitcherStatsResponse(pitcher domain.Pitcher) PitcherStatsResponse {
