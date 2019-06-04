@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Grid, Container, Divider } from 'semantic-ui-react';
 import { Header } from './Header';
 import SearchForm from './select/SearchForm';
+import SearchResults from './select/SearchResults';
 
 export const App = () => {
   return (
@@ -15,7 +16,9 @@ export const App = () => {
                 <SearchForm />
               </div>
               <Divider />
-              <div style={{ height: '260px', overflowY: 'scroll', background: 'red' }} />
+              <div style={{ height: '260px', overflowY: 'scroll' }}>
+                <SearchResults />
+              </div>
               <Divider />
               <div style={{ height: '200px', overflowY: 'scroll', background: 'green' }} />
             </Grid.Column>
