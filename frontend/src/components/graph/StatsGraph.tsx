@@ -6,6 +6,7 @@ import { BatterStats, BatterStatType, PitcherStats, PitcherStatType } from '../.
 
 interface StateProps {
   graphData: LineSerieData[];
+  useMesh: boolean;
 }
 
 const StatsGraph = (props: StateProps) => (
@@ -17,21 +18,21 @@ const StatsGraph = (props: StateProps) => (
       left: 70,
       right: 110,
     }}
-    // xScale={{
-    //   type: 'time',
-    //   format: 'native',
-    // }}
     xScale={{
-      type: 'linear',
-      min: 'auto',
-      max: 'auto',
+      type: 'time',
+      format: '%Y-%m-%d',
+      precision: 'day',
+    }}
+    xFormat={'time:%Y-%m-%d'}
+    axisBottom={{
+      format: '%m/%d',
+      tickValues: 'every 2 days',
     }}
     yScale={{
       type: 'linear',
       min: 'auto',
       max: 'auto',
     }}
-    animate={true}
     legends={[
       {
         anchor: 'bottom-right',
@@ -44,6 +45,8 @@ const StatsGraph = (props: StateProps) => (
         symbolShape: 'circle',
       },
     ]}
+    animate={true}
+    useMesh={props.useMesh}
     theme={{
       background: '#f4f4f4',
       axis: {
@@ -66,27 +69,17 @@ const mapStateToProps = (state: AppState): StateProps => {
     switch (playersType) {
       case 'pitchers':
         const pStat = (p.stats as PitcherStats)[graphStat as PitcherStatType];
-        console.log(pStat);
-        data = pStat.dates.map((dateStr, i) => {
-          const d = new Date(dateStr);
-          console.log(d, d.getTime());
-          return {
-            x: new Date(d).getTime(),
-            y: pStat.values[i],
-          };
-        });
+        data = pStat.dates.map((dateStr, i) => ({
+          x: dateStr,
+          y: pStat.values[i],
+        }));
         break;
       case 'batters':
         const bStat = (p.stats as BatterStats)[graphStat as BatterStatType];
-        console.log(bStat);
-        data = bStat.dates.map((dateStr, i) => {
-          const d = new Date(dateStr);
-          console.log(d, d.getTime());
-          return {
-            x: new Date(d).getTime(),
-            y: bStat.values[i],
-          };
-        });
+        data = bStat.dates.map((dateStr, i) => ({
+          x: dateStr,
+          y: bStat.values[i],
+        }));
         break;
       default:
         data = [];
@@ -98,9 +91,32 @@ const mapStateToProps = (state: AppState): StateProps => {
     };
   });
 
+  const useMesh = canUseMesh(graphData);
+
   return {
     graphData,
+    useMesh,
   };
+};
+
+const canUseMesh = (graphData: LineSerieData[]): boolean => {
+  let dataPoints: LineDatum[] = [];
+  graphData.forEach(d => {
+    dataPoints = [...dataPoints, ...d.data];
+  });
+
+  if (dataPoints.length < 3) {
+    return false;
+  }
+
+  let xs = new Set();
+  let ys = new Set();
+  dataPoints.forEach(p => {
+    xs.add(p.x);
+    ys.add(p.y);
+  });
+
+  return xs.size > 1 && ys.size > 1;
 };
 
 export default connect(
