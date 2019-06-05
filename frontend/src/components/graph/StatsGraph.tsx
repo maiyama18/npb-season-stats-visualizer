@@ -64,7 +64,6 @@ const mapStateToProps = (state: AppState): StateProps => {
   const { graphStat, selectedPlayers, playersType } = state.players;
 
   const graphData: LineSerieData[] = selectedPlayers.map(p => {
-    console.log(p);
     let data: LineDatum[];
     switch (playersType) {
       case 'pitchers':

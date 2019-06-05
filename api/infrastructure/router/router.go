@@ -8,12 +8,15 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
 func Run() error {
 	r := gin.Default()
 	r.Use(cors.Default())
+
+	r.Use(static.Serve("/", static.LocalFile("./frontend/dist", true)))
 
 	gdb, err := db.NewGormDB()
 	if err != nil {

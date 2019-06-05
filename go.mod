@@ -8,6 +8,7 @@ require (
 	github.com/antchfx/xmlquery v1.0.0 // indirect
 	github.com/antchfx/xpath v0.0.0-20190319080838-ce1d48779e67 // indirect
 	github.com/gin-contrib/cors v1.3.0
+	github.com/gin-contrib/static v0.0.0-20190511124741-c1cdf9c9ec7b
 	github.com/gin-gonic/gin v1.4.0
 	github.com/gobwas/glob v0.2.3
 	github.com/gocolly/colly v1.2.0
