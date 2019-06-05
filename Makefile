@@ -16,6 +16,11 @@ build_crawler:
 build_server:
 	cd frontend && yarn build && cd ..
 	GOOS=linux GOARCH=amd64 go build -o server api/main.go
+deploy_server: build_server
+	scp server api@${EC2_HOST}:/usr/local/bin/npb-season-stats-visualizer/
+	scp -r frontend/dist api@${EC2_HOST}:/usr/local/bin/npb-season-stats-visualizer/
+deploy_crawler: build_crawler
+	scp crawler crawler@${EC2_HOST}:/usr/local/bin/npb-season-stats-visualizer/
 crawl:
 	go run crawl/main.go
 server:
