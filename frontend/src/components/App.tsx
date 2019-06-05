@@ -5,6 +5,7 @@ import SearchForm from './select/SearchForm';
 import SearchResults from './select/SearchResults';
 import SelectedPlayers from './select/SelectedPlayers';
 import GraphControl from './graph/GraphControl';
+import StatsGraph from './graph/StatsGraph';
 
 export const App = () => {
   return (
@@ -30,7 +31,9 @@ export const App = () => {
               <div style={{ height: '65px' }}>
                 <GraphControl />
               </div>
-              <div style={{ height: '545px', background: 'grey' }} />
+              <div style={{ height: '545px', background: 'grey' }}>
+                <StatsGraph />
+              </div>
             </Grid.Column>
           </Grid.Row>
         </Grid>

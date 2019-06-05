@@ -23,7 +23,7 @@ export interface Player {
 
 export type Stats = BatterStats | PitcherStats;
 
-interface PitcherStats {
+export interface PitcherStats {
   game: Stat;
   era: Stat;
   gameStart: Stat;
@@ -52,7 +52,7 @@ interface PitcherStats {
   whip: Stat;
 }
 
-interface BatterStats {
+export interface BatterStats {
   game: Stat;
   average: Stat;
   plateAppearance: Stat;
@@ -79,63 +79,12 @@ interface BatterStats {
   error: Stat;
 }
 
-interface Stat {
+export interface Stat {
   dates: string[];
   values: number[];
 }
 
 export type StatType = PitcherStatType | BatterStatType;
 
-export type PitcherStatType =
-  | 'game'
-  | 'era'
-  | 'gameStart'
-  | 'complete'
-  | 'shutOut'
-  | 'qualityStart'
-  | 'win'
-  | 'lose'
-  | 'hold'
-  | 'holdPoint'
-  | 'save'
-  | 'winPercent'
-  | 'inning'
-  | 'hit'
-  | 'homeRun'
-  | 'strikeOut'
-  | 'strikeOutPercent'
-  | 'walk'
-  | 'hitByPitch'
-  | 'wildPitch'
-  | 'balk'
-  | 'run'
-  | 'earnedRun'
-  | 'average'
-  | 'kbb'
-  | 'whip';
-
-export type BatterStatType =
-  | 'game'
-  | 'average'
-  | 'plateAppearance'
-  | 'atBat'
-  | 'hit'
-  | 'double'
-  | 'triple'
-  | 'homeRun'
-  | 'totalBase'
-  | 'runBattedIn'
-  | 'run'
-  | 'strikeOut'
-  | 'walk'
-  | 'hitByPitch'
-  | 'sacrifice'
-  | 'sacrificeFly'
-  | 'stolenBase'
-  | 'caughtStealing'
-  | 'doublePlay'
-  | 'onBasePercent'
-  | 'sluggingPercent'
-  | 'ops'
-  | 'averageWithScoringPosition'
-  | 'error';
+export type PitcherStatType = keyof PitcherStats;
+export type BatterStatType = keyof BatterStats;
