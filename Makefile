@@ -14,6 +14,7 @@ login_db:
 build_crawler:
 	GOOS=linux GOARCH=amd64 go build -o crawler crawl/main.go
 build_server:
+	cd frontend && yarn build && cd ..
 	GOOS=linux GOARCH=amd64 go build -o server api/main.go
 crawl:
 	go run crawl/main.go

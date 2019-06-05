@@ -1,6 +1,7 @@
 package router
 
 import (
+	"errors"
 	"os"
 
 	"github.com/mui87/npb-season-stats-visualizer/api/infrastructure/db"
@@ -16,7 +17,12 @@ func Run() error {
 	r := gin.Default()
 	r.Use(cors.Default())
 
-	r.Use(static.Serve("/", static.LocalFile("./frontend/dist", true)))
+	frontendRoot := getEnv("FRONTEND_ROOT_DIR", "")
+	if frontendRoot == "" {
+		return errors.New("FRONTEND_ROOT_DIR is not set")
+	}
+
+	r.Use(static.Serve("/", static.LocalFile(frontendRoot, true)))
 
 	gdb, err := db.NewGormDB()
 	if err != nil {
