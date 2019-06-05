@@ -143,7 +143,6 @@ export const playersReducer: Reducer<PlayersState, PlayersAction> = (
 };
 
 const axios = axiosBase.create({
-  baseURL: 'http://localhost:8080',
   headers: {
     'Content-Type': 'application/json',
   },

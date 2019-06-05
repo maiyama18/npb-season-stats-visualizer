@@ -17,7 +17,7 @@ func Run() error {
 	r := gin.Default()
 	r.Use(cors.Default())
 
-	frontendRoot := getEnv("FRONTEND_ROOT_DIR", "/usr/local/bin/npb-season-stats-visualizer/dist")
+	frontendRoot := getEnv("FRONTEND_ROOT_DIR", "")
 	if frontendRoot == "" {
 		return errors.New("FRONTEND_ROOT_DIR is not set")
 	}
