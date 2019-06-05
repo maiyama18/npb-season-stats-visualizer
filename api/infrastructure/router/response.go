@@ -30,59 +30,59 @@ type Player struct {
 }
 
 type PitcherStats struct {
-	Game             IntStat
-	Era              FloatStat
-	GameStart        IntStat
-	Complete         IntStat
-	ShutOut          IntStat
-	QualityStart     IntStat
-	Win              IntStat
-	Lose             IntStat
-	Hold             IntStat
-	HoldPoint        IntStat
-	Save             IntStat
-	WinPercent       FloatStat
-	Inning           FloatStat
-	Hit              IntStat
-	HomeRun          IntStat
-	StrikeOut        IntStat
-	StrikeOutPercent FloatStat
-	Walk             IntStat
-	HitByPitch       IntStat
-	WildPitch        IntStat
-	Balk             IntStat
-	Run              IntStat
-	EarnedRun        IntStat
-	Average          FloatStat
-	Kbb              FloatStat
-	Whip             FloatStat
+	Game             IntStat   `json:"game"`
+	Era              FloatStat `json:"era"`
+	GameStart        IntStat   `json:"gameStart"`
+	Complete         IntStat   `json:"complete"`
+	ShutOut          IntStat   `json:"shutOut"`
+	QualityStart     IntStat   `json:"qualityStart"`
+	Win              IntStat   `json:"win"`
+	Lose             IntStat   `json:"lose"`
+	Hold             IntStat   `json:"hold"`
+	HoldPoint        IntStat   `json:"holdPoint"`
+	Save             IntStat   `json:"save"`
+	WinPercent       FloatStat `json:"winPercent"`
+	Inning           FloatStat `json:"inning"`
+	Hit              IntStat   `json:"hit"`
+	HomeRun          IntStat   `json:"homeRun"`
+	StrikeOut        IntStat   `json:"strikeOut"`
+	StrikeOutPercent FloatStat `json:"strikeOutPercent"`
+	Walk             IntStat   `json:"walk"`
+	HitByPitch       IntStat   `json:"hitByPitch"`
+	WildPitch        IntStat   `json:"wildPitch"`
+	Balk             IntStat   `json:"balk"`
+	Run              IntStat   `json:"run"`
+	EarnedRun        IntStat   `json:"earnedRun"`
+	Average          FloatStat `json:"average"`
+	Kbb              FloatStat `json:"kbb"`
+	Whip             FloatStat `json:"whip"`
 }
 
 type BatterStats struct {
-	Game                       IntStat
-	Average                    FloatStat
-	PlateAppearance            IntStat
-	AtBat                      IntStat
-	Hit                        IntStat
-	Double                     IntStat
-	Triple                     IntStat
-	HomeRun                    IntStat
-	TotalBase                  IntStat
-	RunBattedIn                IntStat
-	Run                        IntStat
-	StrikeOut                  IntStat
-	Walk                       IntStat
-	HitByPitch                 IntStat
-	Sacrifice                  IntStat
-	SacrificeFly               IntStat
-	StolenBase                 IntStat
-	CaughtStealing             IntStat
-	DoublePlay                 IntStat
-	OnBasePercent              FloatStat
-	SluggingPercent            FloatStat
-	Ops                        FloatStat
-	AverageWithScoringPosition FloatStat
-	Error                      IntStat
+	Game                       IntStat   `json:"game"`
+	Average                    FloatStat `json:"average"`
+	PlateAppearance            IntStat   `json:"plateAppearance"`
+	AtBat                      IntStat   `json:"atBat"`
+	Hit                        IntStat   `json:"hit"`
+	Double                     IntStat   `json:"double"`
+	Triple                     IntStat   `json:"triple"`
+	HomeRun                    IntStat   `json:"homeRun"`
+	TotalBase                  IntStat   `json:"totalBase"`
+	RunBattedIn                IntStat   `json:"runBattedIn"`
+	Run                        IntStat   `json:"run"`
+	StrikeOut                  IntStat   `json:"strikeOut"`
+	Walk                       IntStat   `json:"walk"`
+	HitByPitch                 IntStat   `json:"hitByPitch"`
+	Sacrifice                  IntStat   `json:"sacrifice"`
+	SacrificeFly               IntStat   `json:"sacrificeFly"`
+	StolenBase                 IntStat   `json:"stolenBase"`
+	CaughtStealing             IntStat   `json:"caughtStealing"`
+	DoublePlay                 IntStat   `json:"doublePlay"`
+	OnBasePercent              FloatStat `json:"onBasePercent"`
+	SluggingPercent            FloatStat `json:"sluggingPercent"`
+	Ops                        FloatStat `json:"ops"`
+	AverageWithScoringPosition FloatStat `json:"averageWithScoringPosition"`
+	Error                      IntStat   `json:"error"`
 }
 
 type IntStat struct {
