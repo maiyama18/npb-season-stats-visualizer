@@ -39,6 +39,7 @@ const SearchForm = (props: StateProps & DispatchProps) => (
     <Form.Field>
       <input
         type="text"
+        autoFocus={true}
         placeholder="選手名で検索"
         value={props.query}
         onChange={e => props.changeQueryThunk(e.target.value)}
